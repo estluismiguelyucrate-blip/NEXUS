@@ -1,0 +1,14 @@
+https://github.com/estluismiguelyucrate-blip/PR2-2026-STOXX.git
+
+# Archivos temporales de Visual Studio
+.vs/
+*.user
+*.suo
+
+# Carpetas de compilacion
+bin/
+obj/
+
+# Archivos generados
+Debug/
+Release/
