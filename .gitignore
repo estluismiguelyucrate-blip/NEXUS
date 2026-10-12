@@ -53,4 +53,12 @@ secrets.json
 TestResults/
 coverage/
 
+# Local submission copy with personal learning assessment
+/docs/NEXUS-manual-tecnico-completo-local.md
+/docs/generar-pdf.py
+/docs/generar-diagramas.py
+/docs/generar-svg.py
+/docs/*.png
+/output/pdf/
+
 
