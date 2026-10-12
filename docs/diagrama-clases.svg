@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1640" viewBox="0 0 1800 1640" role="img" aria-labelledby="title desc">
+<title id="title">NEXUS 2.0: diagrama de clases</title><desc id="desc">Relaciones de herencia entre Personaje y sus clases derivadas, y composición del inventario de Cadete.</desc>
+<defs><marker id="arrow" markerWidth="14" markerHeight="12" refX="13" refY="6" orient="auto"><path d="M0,0 L14,6 L0,12 z" fill="#8294A8"/></marker><marker id="inherit" markerWidth="20" markerHeight="16" refX="18" refY="8" orient="auto"><path d="M0,0 L18,8 L0,16 z" fill="#F4F7FB" stroke="#8294A8" stroke-width="2"/></marker></defs>
+<rect width="1800" height="1640" fill="#F4F7FB"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#233445}.title{font-size:42px;font-weight:bold;fill:#17324D}.sub{font-size:24px;fill:#536579}.node{fill:#fff;stroke:#2463A6;stroke-width:4}.green{fill:#EAF7F4;stroke:#167D83;stroke-width:4}.gold{fill:#FFF4D8;stroke:#C27A13;stroke-width:4}.head{font-size:28px;font-weight:bold;fill:#17324D}.detail{font-size:20px;fill:#536579}.note{font-size:18px;fill:#233445}</style>
+<text x="70" y="75" class="title">NEXUS 2.0 · Diagrama de clases</text><text x="72" y="120" class="sub">Herencia, composición y dependencias principales</text>
+
+<rect x="790" y="150" width="220" height="90" rx="20" class="node"/>
+<text x="808" y="189" class="head">Program</text>
+<text x="808" y="222" class="detail">Main()</text>
+<rect x="650" y="320" width="500" height="145" rx="20" class="node"/>
+<text x="668" y="359" class="head">Simulador</text>
+<text x="668" y="392" class="detail">coordina sesión · mapa · misión · cadete</text>
+<rect x="90" y="535" width="320" height="115" rx="20" class="node"/>
+<text x="108" y="574" class="head">Mapa</text>
+<text x="108" y="607" class="detail">celdas · posición · visitadas</text>
+<rect x="740" y="535" width="320" height="115" rx="20" class="node"/>
+<text x="758" y="574" class="head">Mision</text>
+<text x="758" y="607" class="detail">tres objetivos · Lista</text>
+<rect x="1390" y="535" width="320" height="115" rx="20" class="node"/>
+<text x="1408" y="574" class="head">Encuentro</text>
+<text x="1408" y="607" class="detail">turnos · escape · resultado</text>
+<rect x="690" y="755" width="420" height="155" rx="20" class="node"/>
+<text x="708" y="794" class="head">Personaje · abstracta</text>
+<text x="708" y="827" class="detail">energía · daño · reacción · Mostrar</text>
+<rect x="90" y="995" width="320" height="120" rx="20" class="green"/>
+<text x="108" y="1034" class="head">Cadete</text>
+<text x="108" y="1067" class="detail">energía · estabilidad · XP</text>
+<rect x="740" y="995" width="320" height="120" rx="20" class="node"/>
+<text x="758" y="1034" class="head">Robot</text>
+<text x="758" y="1067" class="detail">blindaje · reacción defensiva</text>
+<rect x="1390" y="995" width="320" height="120" rx="20" class="node"/>
+<text x="1408" y="1034" class="head">Enemigo</text>
+<text x="1408" y="1067" class="detail">ataque hostil</text>
+<rect x="90" y="1230" width="320" height="140" rx="20" class="green"/>
+<text x="108" y="1269" class="head">Inventario</text>
+<text x="108" y="1302" class="detail">List&amp;lt;Objeto&amp;gt; · capacidad 6</text>
+<rect x="740" y="1230" width="320" height="140" rx="20" class="gold"/>
+<text x="758" y="1269" class="head">Objeto · abstracta</text>
+<text x="758" y="1302" class="detail">Nombre · Descripcion · Usar()</text>
+<rect x="50" y="1445" width="390" height="115" rx="20" class="gold"/>
+<text x="68" y="1484" class="head">CelulaEnergia</text>
+<text x="68" y="1517" class="detail">Objeto concreto</text>
+<rect x="480" y="1445" width="340" height="115" rx="20" class="gold"/>
+<text x="498" y="1484" class="head">Escudo</text>
+<text x="498" y="1517" class="detail">Objeto concreto</text>
+<rect x="860" y="1445" width="360" height="115" rx="20" class="gold"/>
+<text x="878" y="1484" class="head">ModuloAtaque</text>
+<text x="878" y="1517" class="detail">Objeto concreto</text>
+<rect x="1260" y="1445" width="400" height="115" rx="20" class="gold"/>
+<text x="1278" y="1484" class="head">Analizador</text>
+<text x="1278" y="1517" class="detail">Objeto concreto</text>
+<polyline points="900,240 900,320" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#arrow)"/>
+<polyline points="700,465 250,535" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#arrow)"/>
+<polyline points="900,465 900,535" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#arrow)"/>
+<polyline points="1100,465 1550,535" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#arrow)"/>
+<polyline points="650,405 42,405 42,955 250,955 250,995" fill="none" stroke="#167D83" stroke-width="4"/>
+<text x="52" y="930" class="note" style="fill:#167D83;font-weight:bold">controla</text>
+<polyline points="250,995 250,910" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#inherit)"/>
+<polyline points="900,995 900,910" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#inherit)"/>
+<polyline points="1550,995 1550,910" fill="none" stroke="#8294A8" stroke-width="5" marker-end="url(#inherit)"/>
+<polyline points="250,1115 250,1230" fill="none" stroke="#167D83" stroke-width="5" marker-end="url(#arrow)"/>
+<text x="265" y="1180" class="note" style="fill:#167D83;font-weight:bold">tiene-un</text>
+<polyline points="410,1300 740,1300" fill="none" stroke="#C27A13" stroke-width="5" marker-end="url(#arrow)"/>
+<text x="500" y="1270" class="note" style="fill:#C27A13;font-weight:bold">almacena 0..6</text>
+<polyline points="245,1445 900,1370" fill="none" stroke="#C27A13" stroke-width="4" marker-end="url(#inherit)"/>
+<polyline points="650,1445 900,1370" fill="none" stroke="#C27A13" stroke-width="4" marker-end="url(#inherit)"/>
+<polyline points="1040,1445 900,1370" fill="none" stroke="#C27A13" stroke-width="4" marker-end="url(#inherit)"/>
+<polyline points="1460,1445 900,1370" fill="none" stroke="#C27A13" stroke-width="4" marker-end="url(#inherit)"/>
+<rect x="70" y="1580" width="1660" height="45" rx="14" fill="#E9EEF4"/>
+<text x="90" y="1609" class="note">Fabrica crea objetos y entidades · Consola gestiona entrada y salida · Encuentro usa Personaje y Cadete</text>
+</svg>
