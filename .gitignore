@@ -1,14 +1,56 @@
-https://github.com/estluismiguelyucrate-blip/PR2-2026-STOXX.git
-
-# Archivos temporales de Visual Studio
+# Visual Studio
 .vs/
-*.user
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
 
-# Carpetas de compilacion
-bin/
-obj/
+# Build outputs
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww]in32/
+[Aa]rm/
+[Aa]rm64/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
 
-# Archivos generados
-Debug/
-Release/
+# Visual Studio generated files
+*.cache
+*.pdb
+*.obj
+*.ilk
+*.meta
+*.tmp_proj
+*.log
+*.tlog/
+*.lastbuildstate
+*.VC.db
+*.VC.VC.opendb
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db-shm
+*.VC.db-wal
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# User-specific configuration and local secrets
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+.env
+.env.*
+!.env.example
+
+# Test and coverage outputs
+TestResults/
+coverage/
+
+
