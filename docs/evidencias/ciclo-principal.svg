@@ -1,23 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="310" viewBox="0 0 1300 310">
-<rect width="1300" height="310" fill="white"/>
-<text x="35" y="42" font-family="Arial" font-size="26" fill="#222" font-weight="700">Ciclo de la partida</text>
-<rect x="25" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="105" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Menú</text>
-<rect x="235" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="315" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Explorar</text>
-<rect x="445" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="525" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Resolver evento</text>
-<rect x="675" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="755" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Actualizar misión</text>
-<rect x="915" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="995" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Revisar si puede salir</text>
-<rect x="1145" y="115" width="160" height="65" fill="#f1f1f1" stroke="#444" stroke-width="2"/>
-<text x="1225" y="155" font-family="Arial" font-size="15" fill="#222" font-weight="700" text-anchor="middle">Extraer y guardar</text>
-<path d="M185 147 H225" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M395 147 H435" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M605 147 H645" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M835 147 H875" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M1075 147 H1115" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<text x="40" y="245" font-family="Arial" font-size="16" fill="#222" font-weight="400">El ciclo se repite hasta completar la misión o perder energía/estabilidad.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="540" viewBox="0 0 1500 540">
+<rect width="1500" height="540" fill="white"/>
+<text x="30" y="45" font-family="Arial" font-size="26" fill="#222" font-weight="700">Ciclo principal de una partida</text>
+<rect x="30" y="115" width="145" height="70" fill="white" stroke="#222" stroke-width="2"/><text x="40" y="139" font-family="Arial" font-size="16" fill="#222" font-weight="700">Menú</text>
+<rect x="205" y="115" width="145" height="70" fill="white" stroke="#222" stroke-width="2"/><text x="215" y="139" font-family="Arial" font-size="16" fill="#222" font-weight="700">Explorar</text>
+<rect x="380" y="115" width="145" height="70" fill="white" stroke="#222" stroke-width="2"/><text x="390" y="139" font-family="Arial" font-size="16" fill="#222" font-weight="700">Resolver
+evento</text>
+<rect x="555" y="115" width="145" height="70" fill="white" stroke="#222" stroke-width="2"/><text x="565" y="139" font-family="Arial" font-size="16" fill="#222" font-weight="700">Actualizar
+estado</text>
+<path d="M175 150 H195 M350 150 H370 M525 150 H545" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<polygon points="720,150 790,105 860,150 790,195" fill="white" stroke="#222" stroke-width="2"/>
+<text x="790" y="145" font-family="Arial" font-size="14" fill="#222" font-weight="700" text-anchor="middle">¿Sigue</text>
+<text x="790" y="164" font-family="Arial" font-size="14" fill="#222" font-weight="700" text-anchor="middle">en pie?</text>
+<polygon points="925,150 1005,100 1085,150 1005,200" fill="white" stroke="#222" stroke-width="2"/>
+<text x="1005" y="142" font-family="Arial" font-size="13" fill="#222" font-weight="700" text-anchor="middle">¿Objetivos listos</text>
+<text x="1005" y="160" font-family="Arial" font-size="13" fill="#222" font-weight="700" text-anchor="middle">y está en base?</text>
+<rect x="1180" y="115" width="190" height="70" fill="white" stroke="#222" stroke-width="2"/><text x="1190" y="139" font-family="Arial" font-size="16" fill="#222" font-weight="700">Extraer y guardar</text>
+<rect x="700" y="330" width="150" height="65" fill="white" stroke="#222" stroke-width="2"/><text x="710" y="354" font-family="Arial" font-size="16" fill="#222" font-weight="700">Misión fallida</text>
+<path d="M700 150 H710" stroke="#222" stroke-width="2" marker-end="url(#a)"/><path d="M860 150 H910" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<text x="860" y="137" font-family="Arial" font-size="13" fill="#222" font-weight="400">Sí</text>
+<path d="M790 195 V300" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<text x="780" y="245" font-family="Arial" font-size="13" fill="#222" font-weight="400">No</text>
+<path d="M1085 150 H1165" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<text x="1105" y="137" font-family="Arial" font-size="13" fill="#222" font-weight="400">Sí</text>
+<path d="M1005 200 V455 H278 V195" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<text x="1009" y="245" font-family="Arial" font-size="13" fill="#222" font-weight="400">No: seguir explorando</text>
+<text x="30" y="500" font-family="Arial" font-size="15" fill="#222" font-weight="400">El movimiento y los eventos se repiten. La partida termina si la energía o la estabilidad llegan a cero.</text>
 <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#222"/></marker></defs>
 </svg>

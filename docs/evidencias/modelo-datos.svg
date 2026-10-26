@@ -1,39 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
-<rect width="1200" height="620" fill="white"/>
-<text x="35" y="45" font-family="Arial" font-size="26" fill="#222" font-weight="700">Tablas principales y relaciones</text>
-<rect x="35" y="120" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="47" y="151" font-family="Arial" font-size="17" fill="#222" font-weight="700">Explorador</text>
-<text x="47" y="184" font-family="Arial" font-size="13" fill="#222" font-weight="400">Id · nombre · edad</text>
-<rect x="350" y="120" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="362" y="151" font-family="Arial" font-size="17" fill="#222" font-weight="700">Partida</text>
-<text x="362" y="184" font-family="Arial" font-size="13" fill="#222" font-weight="400">Id · explorador · mapa</text>
-<text x="362" y="208" font-family="Arial" font-size="13" fill="#222" font-weight="400">posición · energía · XP</text>
-<rect x="740" y="120" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="752" y="151" font-family="Arial" font-size="17" fill="#222" font-weight="700">Mapa</text>
-<text x="752" y="184" font-family="Arial" font-size="13" fill="#222" font-weight="400">Id · nombre · versión</text>
-<rect x="35" y="355" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="47" y="386" font-family="Arial" font-size="17" fill="#222" font-weight="700">Misión</text>
-<text x="47" y="419" font-family="Arial" font-size="13" fill="#222" font-weight="400">Id · nombre</text>
-<rect x="350" y="355" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="362" y="386" font-family="Arial" font-size="17" fill="#222" font-weight="700">ProgresoMision</text>
-<text x="362" y="419" font-family="Arial" font-size="13" fill="#222" font-weight="400">PartidaId · objetivos</text>
-<rect x="740" y="355" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="752" y="386" font-family="Arial" font-size="17" fill="#222" font-weight="700">CasillaVisitada</text>
-<text x="752" y="419" font-family="Arial" font-size="13" fill="#222" font-weight="400">PartidaId · fila · columna</text>
-<rect x="965" y="120" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="977" y="151" font-family="Arial" font-size="17" fill="#222" font-weight="700">ObjetoPartida</text>
-<text x="977" y="184" font-family="Arial" font-size="13" fill="#222" font-weight="400">PartidaId · espacio</text>
-<text x="977" y="208" font-family="Arial" font-size="13" fill="#222" font-weight="400">tipo · bonus</text>
-<rect x="965" y="355" width="200" height="125" fill="#f2f2f2" stroke="#444" stroke-width="2"/>
-<text x="977" y="386" font-family="Arial" font-size="17" fill="#222" font-weight="700">ObjetoCatalogo</text>
-<text x="977" y="419" font-family="Arial" font-size="13" fill="#222" font-weight="400">Id · nombre · tipo</text>
-<path d="M235 180 H340" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M550 180 H730" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M135 245 V345" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M450 245 V345" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M550 220 C670 270 760 290 840 345" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M550 200 C730 225 850 210 955 180" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<path d="M1065 245 V345" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
-<text x="35" y="565" font-family="Arial" font-size="15" fill="#222" font-weight="400">Las claves principales y foráneas sirven para identificar y enlazar filas.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="590" viewBox="0 0 1220 590">
+<rect width="1220" height="590" fill="white"/>
+<text x="30" y="45" font-family="Arial" font-size="26" fill="#222" font-weight="700">Tablas principales y relaciones</text>
+<rect x="35" y="110" width="215" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="45" y="135" font-family="Arial" font-size="16" fill="#222" font-weight="700">Explorador</text>
+<text x="45" y="163" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK Id · nombre · edad</text>
+<rect x="365" y="110" width="270" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="375" y="135" font-family="Arial" font-size="16" fill="#222" font-weight="700">Partida</text>
+<text x="375" y="163" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK Id · FK explorador</text>
+<text x="375" y="185" font-family="Arial" font-size="13" fill="#222" font-weight="400">FK mapa · FK misión</text>
+<text x="375" y="207" font-family="Arial" font-size="13" fill="#222" font-weight="400">posición · energía · XP</text>
+<rect x="720" y="110" width="205" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="730" y="135" font-family="Arial" font-size="16" fill="#222" font-weight="700">Mapa</text>
+<text x="730" y="163" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK Id · nombre</text>
+<text x="730" y="185" font-family="Arial" font-size="13" fill="#222" font-weight="400">versión</text>
+<rect x="980" y="110" width="205" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="990" y="135" font-family="Arial" font-size="16" fill="#222" font-weight="700">CeldaMapa</text>
+<text x="990" y="163" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK/FK mapa</text>
+<text x="990" y="185" font-family="Arial" font-size="13" fill="#222" font-weight="400">fila · columna · tipo</text>
+<rect x="35" y="350" width="215" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="45" y="375" font-family="Arial" font-size="16" fill="#222" font-weight="700">Misión</text>
+<text x="45" y="403" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK Id · nombre</text>
+<rect x="365" y="350" width="270" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="375" y="375" font-family="Arial" font-size="16" fill="#222" font-weight="700">ProgresoMision</text>
+<text x="375" y="403" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK/FK partida</text>
+<text x="375" y="425" font-family="Arial" font-size="13" fill="#222" font-weight="400">anomalía · núcleo · guardián</text>
+<rect x="700" y="350" width="215" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="710" y="375" font-family="Arial" font-size="16" fill="#222" font-weight="700">CasillaVisitada</text>
+<text x="710" y="403" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK/FK partida</text>
+<text x="710" y="425" font-family="Arial" font-size="13" fill="#222" font-weight="400">fila · columna</text>
+<rect x="970" y="350" width="215" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="980" y="375" font-family="Arial" font-size="16" fill="#222" font-weight="700">ObjetoPartida</text>
+<text x="980" y="403" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK/FK partida · espacio</text>
+<text x="980" y="425" font-family="Arial" font-size="13" fill="#222" font-weight="400">FK tipo · bonus</text>
+<rect x="970" y="485" width="215" height="112" fill="#f1f1f1" stroke="#222" stroke-width="2"/>
+<text x="980" y="510" font-family="Arial" font-size="16" fill="#222" font-weight="700">ObjetoCatalogo</text>
+<text x="980" y="538" font-family="Arial" font-size="13" fill="#222" font-weight="400">PK Id · código · nombre</text>
+<path d="M250 165 H355" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M720 185 H645" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M925 165 H970" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M250 405 H305 V225 H355" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M500 222 V340" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M635 185 H670 V405 H690" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M600 222 V290 H1075 V340" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1075 485 V470" fill="none" stroke="#222" stroke-width="2" marker-end="url(#a)"/>
+<text x="35" y="550" font-family="Arial" font-size="14" fill="#222" font-weight="400">PK: clave primaria · FK: clave foránea · 1:N: una fila puede relacionarse con varias.</text>
 <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#222"/></marker></defs>
 </svg>
