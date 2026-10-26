@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#071522"/>
+<text x="40" y="42" fill="#35d0c6" font-size="16" font-family="Arial">Boceto conceptual · NEXUS</text>
+<text x="40" y="88" fill="#eef5fa" font-size="30" font-weight="700" font-family="Arial">Explorador e inventario</text>
+<rect x="42" y="125" width="380" height="525" rx="18" fill="#0b1d2c" stroke="#25445a" stroke-width="2"/>
+<text x="78" y="175" fill="#35d0c6" font-size="16" font-family="Arial" font-weight="700">EXPLORADOR ACTIVO</text>
+<circle cx="140" cy="260" r="54" fill="#17354a" stroke="#35d0c6" stroke-width="3"/>
+<text x="140" text-anchor="middle" y="269" fill="#eef5fa" font-size="36" font-family="Arial" font-weight="700">L</text>
+<text x="220" y="238" fill="#eef5fa" font-size="28" font-family="Arial" font-weight="700">Luis</text>
+<text x="220" y="270" fill="#a7bdcc" font-size="16" font-family="Arial" font-weight="400">Cadete · nivel inicial</text>
+<text x="80" y="345" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="700">ENERGÍA</text>
+<text x="330" y="345" fill="#eef5fa" font-size="15" font-family="Arial" font-weight="400">74 / 100</text>
+<rect x="80" y="360" width="300" height="13" rx="6" fill="#253e4f" stroke="#253e4f" stroke-width="2"/>
+<rect x="80" y="360" width="222" height="13" rx="6" fill="#35d0c6" stroke="#35d0c6" stroke-width="2"/>
+<text x="80" y="410" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="700">ESTABILIDAD</text>
+<text x="330" y="410" fill="#eef5fa" font-size="15" font-family="Arial" font-weight="400">62 / 100</text>
+<rect x="80" y="425" width="300" height="13" rx="6" fill="#253e4f" stroke="#253e4f" stroke-width="2"/>
+<rect x="80" y="425" width="186" height="13" rx="6" fill="#f0c66a" stroke="#f0c66a" stroke-width="2"/>
+<text x="80" y="485" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">ATAQUE 12     XP 15</text>
+<text x="80" y="535" fill="#a7bdcc" font-size="16" font-family="Arial" font-weight="400">Escudo 0     Descansos 2</text>
+<rect x="80" y="575" width="300" height="45" rx="10" fill="#155a62" stroke="#35d0c6" stroke-width="2"/><text x="230.0" text-anchor="middle" y="603.5" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">VOLVER A EXPLORAR</text>
+<rect x="455" y="125" width="780" height="525" rx="18" fill="#0b1d2c" stroke="#25445a" stroke-width="2"/>
+<text x="490" y="175" fill="#35d0c6" font-size="22" font-family="Arial" font-weight="700">INVENTARIO</text>
+<text x="1045" y="175" fill="#a7bdcc" font-size="16" font-family="Arial" font-weight="400">1 / 6 espacios</text>
+<rect x="490" y="205" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="508" y="236" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 01</text>
+<text x="508" y="265" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Célula de energía</text>
+<text x="508" y="289" fill="#a7bdcc" font-size="13" font-family="Arial" font-weight="400">Recupera 25 energía</text>
+<rect x="845" y="205" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="863" y="236" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 02</text>
+<text x="863" y="265" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Escudo</text>
+<text x="863" y="289" fill="#a7bdcc" font-size="13" font-family="Arial" font-weight="400">Absorbe hasta 30 daño</text>
+<rect x="490" y="330" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="508" y="361" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 03</text>
+<text x="508" y="390" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Vacío</text>
+<rect x="845" y="330" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="863" y="361" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 04</text>
+<text x="863" y="390" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Vacío</text>
+<rect x="490" y="455" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="508" y="486" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 05</text>
+<text x="508" y="515" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Vacío</text>
+<rect x="845" y="455" width="325" height="105" rx="10" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="863" y="486" fill="#35d0c6" font-size="13" font-family="Arial" font-weight="700">ESPACIO 06</text>
+<text x="863" y="515" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">Vacío</text>
+<rect x="490" y="595" width="180" height="40" rx="10" fill="#155a62" stroke="#35d0c6" stroke-width="2"/><text x="580.0" text-anchor="middle" y="621.0" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">USAR OBJETO</text>
+<rect x="690" y="595" width="180" height="40" rx="10" fill="#17354a" stroke="#3c5d70" stroke-width="2"/><text x="780.0" text-anchor="middle" y="621.0" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">DESCARTAR</text>
+</svg>

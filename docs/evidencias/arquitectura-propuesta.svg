@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="520" viewBox="0 0 1240 520">
+<rect width="1240" height="520" fill="#071522"/>
+<text x="40" y="55" fill="#eef5fa" font-size="26" font-family="Arial" font-weight="700">NEXUS · propuesta por capas</text>
+<rect x="45" y="145" width="300" height="210" rx="15" fill="#102638" stroke="#35d0c6" stroke-width="2"/>
+<text x="67" y="190" fill="#35d0c6" font-size="24" font-family="Arial" font-weight="700">Nexus.WinForms</text>
+<text x="67" y="245" fill="#eef5fa" font-size="17" font-family="Arial" font-weight="400">Forms, paneles y controles</text>
+<text x="67" y="290" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="400">Presenta datos y recibe acciones</text>
+<rect x="470" y="145" width="300" height="210" rx="15" fill="#102638" stroke="#f0c66a" stroke-width="2"/>
+<text x="492" y="190" fill="#f0c66a" font-size="24" font-family="Arial" font-weight="700">Nexus.Core</text>
+<text x="492" y="245" fill="#eef5fa" font-size="17" font-family="Arial" font-weight="400">Reglas y casos de uso</text>
+<text x="492" y="290" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="400">Mover · explorar · inventario · misión</text>
+<rect x="895" y="145" width="300" height="210" rx="15" fill="#102638" stroke="#65d89b" stroke-width="2"/>
+<text x="917" y="190" fill="#65d89b" font-size="24" font-family="Arial" font-weight="700">Nexus.Data</text>
+<text x="917" y="245" fill="#eef5fa" font-size="17" font-family="Arial" font-weight="400">Repositorios y EF Core</text>
+<text x="917" y="290" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="400">Mapea los datos de la partida</text>
+<path d="M345 245 H455" stroke="#35d0c6" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M770 245 H880" stroke="#f0c66a" stroke-width="4" marker-end="url(#arrow)"/>
+<rect x="910" y="405" width="270" height="70" rx="12" fill="#102638" stroke="#65d89b" stroke-width="2"/>
+<text x="1045" text-anchor="middle" y="448" fill="#eef5fa" font-size="20" font-family="Arial" font-weight="700">SQL Server</text>
+<path d="M1045 355 V395" stroke="#65d89b" stroke-width="4" marker-end="url(#arrow)"/>
+<text x="45" y="425" fill="#a7bdcc" font-size="16" font-family="Arial" font-weight="400">Los formularios llaman a Core. Data implementa los repositorios definidos por Core.</text>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#35d0c6"/></marker></defs>
+</svg>

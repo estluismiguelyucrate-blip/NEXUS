@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<rect width="1280" height="720" fill="#071522"/>
+<text x="40" y="42" fill="#35d0c6" font-size="16" font-family="Arial">Boceto conceptual · NEXUS</text>
+<text x="40" y="88" fill="#eef5fa" font-size="30" font-weight="700" font-family="Arial">Misiones</text>
+<rect x="45" y="130" width="1190" height="520" rx="18" fill="#0b1d2c" stroke="#25445a" stroke-width="2"/>
+<text x="90" y="185" fill="#35d0c6" font-size="16" font-family="Arial" font-weight="700">EXPEDICIÓN ACTIVA</text>
+<text x="90" y="230" fill="#eef5fa" font-size="34" font-family="Arial" font-weight="700">La anomalía perdida</text>
+<text x="90" y="270" fill="#a7bdcc" font-size="18" font-family="Arial" font-weight="400">Investiga la zona, recupera el núcleo y regresa al punto de extracción.</text>
+<rect x="90" y="330" width="1080" height="52" rx="9" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="110" y="363" fill="#35d0c6" font-size="17" font-family="Arial" font-weight="700">01</text>
+<text x="165" y="363" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="400">Llegar a la zona de anomalía</text>
+<text x="850" y="363" fill="#f06b75" font-size="15" font-family="Arial" font-weight="700">Pendiente</text>
+<rect x="90" y="396" width="1080" height="52" rx="9" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="110" y="429" fill="#35d0c6" font-size="17" font-family="Arial" font-weight="700">02</text>
+<text x="165" y="429" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="400">Encontrar el núcleo energético</text>
+<text x="850" y="429" fill="#f0c66a" font-size="15" font-family="Arial" font-weight="700">Pendiente</text>
+<rect x="90" y="462" width="1080" height="52" rx="9" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="110" y="495" fill="#35d0c6" font-size="17" font-family="Arial" font-weight="700">03</text>
+<text x="165" y="495" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="400">Superar al guardián</text>
+<text x="850" y="495" fill="#f06b75" font-size="15" font-family="Arial" font-weight="700">Pendiente</text>
+<rect x="90" y="528" width="1080" height="52" rx="9" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="110" y="561" fill="#35d0c6" font-size="17" font-family="Arial" font-weight="700">04</text>
+<text x="165" y="561" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="400">Regresar a la base y extraerse</text>
+<text x="850" y="561" fill="#a7bdcc" font-size="15" font-family="Arial" font-weight="700">Bloqueado hasta completar 1–3</text>
+<rect x="90" y="602" width="1080" height="2" rx="1" fill="#315168" stroke="#315168" stroke-width="2"/>
+<text x="100" y="632" fill="#f0c66a" font-size="16" font-family="Arial" font-weight="400">Recompensa al completar: +100 XP y un módulo si queda espacio.</text>
+<rect x="890" y="660" width="280" height="44" rx="10" fill="#155a62" stroke="#35d0c6" stroke-width="2"/><text x="1030.0" text-anchor="middle" y="688.0" fill="#eef5fa" font-size="18" font-family="Arial" font-weight="700">VOLVER AL MAPA</text>
+</svg>

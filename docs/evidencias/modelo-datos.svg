@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="800" viewBox="0 0 1460 800">
+<rect width="1460" height="800" fill="#071522"/>
+<text x="40" y="55" fill="#eef5fa" font-size="26" font-family="Arial" font-weight="700">NEXUS · propuesta de entidades SQL Server</text>
+<rect x="45" y="130" width="250" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="60" y="162" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">Explorador</text>
+<text x="60" y="192" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK ExploradorId</text>
+<text x="60" y="214" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Nombre · Edad</text>
+<rect x="390" y="120" width="320" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="405" y="152" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">Partida</text>
+<text x="405" y="182" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK PartidaId · FK ExploradorId</text>
+<text x="405" y="204" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">FK MapaId · FK MisionId</text>
+<text x="405" y="226" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Posición · energía · estabilidad · XP</text>
+<rect x="820" y="115" width="265" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="835" y="147" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">Mapa</text>
+<text x="835" y="177" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK MapaId</text>
+<text x="835" y="199" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Nombre · versión</text>
+<rect x="1160" y="115" width="260" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="1175" y="147" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">CeldaMapa</text>
+<text x="1175" y="177" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK/FK MapaId · fila · columna</text>
+<text x="1175" y="199" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">TipoCelda</text>
+<rect x="420" y="360" width="270" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="435" y="392" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">ProgresoMision</text>
+<text x="435" y="422" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK/FK PartidaId</text>
+<text x="435" y="444" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Anomalía · núcleo · guardián</text>
+<rect x="770" y="360" width="270" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="785" y="392" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">CasillaVisitada</text>
+<text x="785" y="422" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK/FK PartidaId · fila · columna</text>
+<text x="785" y="444" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">FechaVisita</text>
+<rect x="1085" y="360" width="335" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="1100" y="392" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">ObjetoPartida</text>
+<text x="1100" y="422" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK/FK PartidaId · espacio</text>
+<text x="1100" y="444" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">FK ObjetoCatalogoId · bonus</text>
+<rect x="1085" y="575" width="335" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="1100" y="607" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">ObjetoCatalogo</text>
+<text x="1100" y="637" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK ObjetoCatalogoId</text>
+<text x="1100" y="659" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Código · nombre · descripción</text>
+<rect x="45" y="360" width="270" height="155" rx="12" fill="#102638" stroke="#17354a" stroke-width="2"/>
+<text x="60" y="392" fill="#35d0c6" font-size="18" font-family="Arial" font-weight="700">Mision</text>
+<text x="60" y="422" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">PK MisionId</text>
+<text x="60" y="444" fill="#eef5fa" font-size="14" font-family="Arial" font-weight="400">Código · nombre · descripción</text>
+<path d="M295 208 H380" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M710 208 H810" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1085 192 H1150" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M545 285 V350" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M550 285 V355" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M650 285 C720 310 810 315 900 350" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M680 230 C850 280 1030 300 1160 350" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1250 515 V565" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M315 435 H380" fill="none" stroke="#35d0c6" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="45" y="700" fill="#a7bdcc" font-size="16" font-family="Arial" font-weight="400">PK = clave primaria · FK = clave foránea · El inventario conserva sus seis espacios.</text>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#35d0c6"/></marker></defs>
+</svg>
