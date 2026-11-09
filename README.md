@@ -4,21 +4,21 @@ NEXUS es una aventura de exploración por consola hecha en C#. El jugador crea u
 
 ## Estado actual
 
-La versión H3 implementa una misión y un mapa fijo de 4 × 5 en consola. Tiene combate por turnos, anomalías, objetos, inventario limitado, objetivos y extracción. El programa todavía no tiene ventanas gráficas ni guarda partidas en una base de datos.
+La versión H3 implementa una misión y un mapa fijo de 4 × 5 en consola. Tiene combate por turnos, anomalías, objetos, inventario limitado, objetivos y extracción. La solución ahora incluye un primer menú principal en Windows Forms; la opción «Iniciar juego» ejecuta la versión de consola existente.
 
 ## Tecnologías
 
 - C# y .NET 10, con destino net10.0.
-- Aplicación de consola; el proyecto actual no declara paquetes NuGet externos.
-- La siguiente etapa propuesta es Windows Forms con SQL Server y Entity Framework Core. Esa etapa aún no está implementada.
+- Aplicación de consola y aplicación Windows Forms en la misma solución; no se declaran paquetes NuGet externos.
+- La persistencia con SQL Server y Entity Framework Core sigue siendo una etapa futura.
 
 ## Cómo ejecutar la versión actual
 
-Se necesita el SDK de .NET 10. Desde la carpeta raíz:
+Se necesita Windows y el SDK de .NET 10. Abre `NEXUS 2.0.slnx` en Visual Studio y selecciona `nexus visual` como proyecto de inicio para ejecutar el menú gráfico. Para iniciar la versión de consola directamente, desde la carpeta raíz ejecuta:
 
     dotnet run --project "NEXUS 2.0.csproj"
 
-También se puede abrir NEXUS 2.0.slnx en Visual Studio con las herramientas de .NET instaladas. La aplicación espera que se ingresen las opciones en la consola.
+La aplicación de consola espera que se ingresen las opciones en la terminal.
 
 ## Documentación
 
@@ -36,11 +36,13 @@ La carpeta docs separa el análisis del programa que existe y la propuesta para 
 ## Estructura principal
 
 - Program.cs: código actual del juego.
-- NEXUS 2.0.csproj y NEXUS 2.0.slnx: proyecto y solución actuales.
+- NEXUS 2.0.csproj: aplicación de consola original.
+- nexus visual/: primer menú gráfico de Windows Forms, integrado en la solución y con referencia al proyecto NEXUS original.
+- NEXUS 2.0.slnx: solución que contiene ambos proyectos.
 - README.md: presentación y ejecución.
 - docs/: manual, propuesta y evidencias.
 
-La propuesta parte de las clases que ya están en Program.cs. Los formularios, las capas y las tablas SQL son ideas para implementar después, no funciones que ya se puedan ejecutar.
+La versión gráfica reutiliza la clase `Cadete` como vínculo con el ensamblado del juego y permite iniciar el simulador original. Las funciones de persistencia y las tablas SQL siguen siendo propuestas para una etapa futura.
 
 ## GitHub Desktop
 

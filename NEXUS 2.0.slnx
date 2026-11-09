@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="NEXUS 2.0.csproj" />
+  <Project Path="nexus visual/nexus visual.csproj" Id="a336697d-d9ec-4c87-a283-e6a79ab3c9b9" />
 </Solution>
 
 
