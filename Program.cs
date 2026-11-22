@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -105,6 +105,8 @@ namespace Nexus
         public int Edad { get; }
         public int Estabilidad { get { return _estabilidad; } }
         public int XP { get; private set; }
+        public int Escudo { get { return _escudo; } }
+        public int DescansosRestantes { get { return _descansos; } }
         public bool AnalisisActivo { get; set; }
         public Inventario Inventario { get; }
 
@@ -129,6 +131,8 @@ namespace Nexus
             CambiarEstabilidad(15);
             Consola.Escribir($"Descansas en la base. Energia +20, Estabilidad +15. Descansos restantes: {_descansos}", ConsoleColor.Green);
         }
+
+        public void RestaurarDescansos(int cantidad) { _descansos = Math.Max(0, Math.Min(2, cantidad)); }
 
         public override int RecibirDano(int dano)
         {
@@ -271,6 +275,7 @@ namespace Nexus
     public class ModuloAtaque : Objeto
     {
         private readonly int _bonus;
+        public int Bonus { get { return _bonus; } }
 
         public ModuloAtaque(string nombre = "Modulo de ataque", int bonus = 6)
             : base(nombre, $"Ataque +{bonus}")
@@ -311,6 +316,7 @@ namespace Nexus
         private readonly List<Objeto> _objetos = new List<Objeto>();
 
         public int Cantidad { get { return _objetos.Count; } }
+        public IReadOnlyList<Objeto> Objetos { get { return _objetos.AsReadOnly(); } }
 
         public bool Agregar(Objeto objeto)
         {
@@ -476,6 +482,17 @@ namespace Nexus
         public int Columna { get; private set; }
         public TipoCelda Actual { get { return _celdas[Fila, Columna]; } }
         public bool Visitada { get { return _visitado[Fila, Columna]; } set { _visitado[Fila, Columna] = value; } }
+        public TipoCelda TipoEn(int fila, int columna) { return _celdas[fila, columna]; }
+        public bool FueVisitada(int fila, int columna) { return _visitado[fila, columna]; }
+        public void MarcarVisitada(int fila, int columna) { _visitado[fila, columna] = true; }
+        public void RestaurarEstado(int fila, int columna, bool[,] visitadas)
+        {
+            if (fila < 0 || fila >= Filas || columna < 0 || columna >= Columnas) throw new ArgumentOutOfRangeException(nameof(fila));
+            if (visitadas.GetLength(0) != Filas || visitadas.GetLength(1) != Columnas) throw new ArgumentException("El mapa guardado no coincide con esta versión.");
+            Fila = fila; Columna = columna;
+            for (int f = 0; f < Filas; f++) for (int c = 0; c < Columnas; c++) _visitado[f, c] = visitadas[f, c];
+            _visitado[Fila, Columna] = true;
+        }
 
         /* false si el movimiento sale del mapa */
         public bool Mover(int df, int dc)
@@ -746,19 +763,12 @@ namespace Nexus
 
     class Program
     {
+        [STAThread]
         static void Main()
         {
-            Console.OutputEncoding = Encoding.UTF8;
-            try
-            {
-                new Simulador().Iniciar();
-            }
-            catch (Exception ex)
-            {
-                Consola.Escribir($"\nError inesperado en NEXUS: {ex.Message}", ConsoleColor.Red);
-            }
-            Console.WriteLine("\nPresiona una tecla para cerrar...");
-            Console.ReadKey();
+            ApplicationConfiguration.Initialize();
+            Application.Run(new MainForm());
         }
     }
 }
+
