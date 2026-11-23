@@ -5,10 +5,10 @@ namespace Nexus;
 
 public sealed partial class MainForm : Form
 {
-    private static readonly Color Fondo = Color.FromArgb(14, 18, 16);
-    private static readonly Color Panel = Color.FromArgb(27, 32, 28);
-    private static readonly Color Turquesa = Color.FromArgb(185, 161, 112);
-    private static readonly Color TextoSuave = Color.FromArgb(164, 174, 175);
+    private static readonly Color Fondo = Color.FromArgb(9, 13, 24);
+    private static readonly Color Panel = Color.FromArgb(17, 24, 40);
+    private static readonly Color Turquesa = Color.FromArgb(72, 226, 218);
+    private static readonly Color TextoSuave = Color.FromArgb(157, 174, 198);
     private string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;";
     private GameSession? _session;
     private string _nombre = "Cadete";
@@ -24,8 +24,8 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         Text = "NEXUS | Expedición";
-        MinimumSize = new Size(1040, 700);
-        Size = new Size(1250, 790);
+        MinimumSize = new Size(1040, 680);
+        Size = new Size(1220, 760);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Fondo;
         ForeColor = Color.White;
@@ -42,23 +42,23 @@ public sealed partial class MainForm : Form
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 69)); root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31));
         root.RowStyles.Add(new RowStyle(SizeType.Percent,100)); Controls.Add(root);
         var art = new Panel { Dock=DockStyle.Fill, BackColor=Panel, Margin=new Padding(0,8,24,8) }; art.Paint += (_,e) => DrawBackdrop(e.Graphics, art.ClientRectangle); root.Controls.Add(art,0,0);
-        art.Controls.Add(MakeLabel("NEXUS", 31, Color.FromArgb(229,224,204), true, 34, 24, 260, 48));
-        art.Controls.Add(MakeLabel("BITÁCORA DE CAMPO     /     REGISTRO 04-B", 9, Turquesa, true, 38, 77, 410, 22));
-        art.Controls.Add(MakeLabel("La señal llegó\ndesde el otro lado\ndel umbral.", 28, Color.White, true, 38, 143, 450, 132));
-        art.Controls.Add(MakeLabel("Una baliza parpadea entre el polvo.\nAlgo respondió desde el cráter.", 12, Color.FromArgb(223,221,208), false, 42, 296, 360, 52));
-        art.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(105,185,161,112),1);e.Graphics.DrawLine(pen,40,376,285,376);e.Graphics.DrawLine(pen,40,376,40,400);};
-        art.Controls.Add(MakeLabel("SECTOR H3     ·     ENLACE INESTABLE", 9, Turquesa, true, 42, 390, 280, 22));
-        art.Controls.Add(MakeLabel("OBJETIVO   /   RECUPERAR EL NÚCLEO", 9, Color.FromArgb(225,221,203), true, 42, 421, 320, 22));
-        art.Controls.Add(MakeLabel("Regresa a la baliza de extracción.\nNo pierdas contacto con la base.", 11, TextoSuave, false, 42, 450, 330, 46));
+        art.Controls.Add(MakeLabel("NEXUS", 32, Color.FromArgb(239,245,255), true, 34, 24, 260, 48));
+        art.Controls.Add(MakeLabel("DIVISIÓN DE EXPLORACIÓN     /     ARCHIVO 04-B", 9, Turquesa, true, 38, 77, 440, 22));
+        art.Controls.Add(MakeLabel("El espacio\nno está\nen silencio.", 31, Color.White, true, 38, 137, 450, 142));
+        art.Controls.Add(MakeLabel("Señal de origen desconocido.\nUna baliza responde desde H3.", 12, Color.FromArgb(220,231,246), false, 42, 296, 360, 52));
+        art.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(135,72,226,218),1);e.Graphics.DrawLine(pen,40,376,285,376);e.Graphics.DrawLine(pen,40,376,40,400);};
+        art.Controls.Add(MakeLabel("SECTOR H3     ·     TRANSMISIÓN RECIBIDA", 9, Turquesa, true, 42, 390, 320, 22));
+        art.Controls.Add(MakeLabel("OBJETIVO   /   RECUPERAR EL NÚCLEO", 9, Color.FromArgb(224,232,246), true, 42, 421, 320, 22));
+        art.Controls.Add(MakeLabel("Sigue la señal hasta el cráter.\nRegresa a la baliza de extracción.", 11, TextoSuave, false, 42, 450, 350, 46));
         var right = new Panel { Dock=DockStyle.Fill, BackColor=Fondo, Padding=new Padding(3,54,4,24) }; root.Controls.Add(right,1,0);
-        right.Controls.Add(MakeLabel("PUESTO DE\nOBSERVACIÓN 04", 18, Color.White, true, 12, 6, 280, 61));
-        right.Controls.Add(MakeLabel("Una operación sigue abierta.", 10, TextoSuave, false, 15, 79, 260, 26));
+        right.Controls.Add(MakeLabel("CENTRO DE\nOPERACIONES", 19, Color.White, true, 12, 6, 280, 61));
+        right.Controls.Add(MakeLabel("●  CANAL NEXUS DISPONIBLE", 9, Turquesa, true, 15, 79, 260, 26));
         var play = MakeButton("INICIAR EXPEDICIÓN   ↗", Turquesa, Fondo, 12, 125, 292, 53); play.FlatAppearance.BorderSize=0; play.Click += (_,_) => NewCadet(); right.Controls.Add(play);
-        var cont = MakeButton("CONTINUAR PARTIDA", Color.FromArgb(29,35,31), Color.White, 38, 194, 266, 43); cont.FlatAppearance.BorderColor=Color.FromArgb(88,99,79); cont.Click += async (_,_) => await LoadGame(); right.Controls.Add(cont);
-        var db = MakeButton("CONFIGURAR BASE DE DATOS", Color.FromArgb(22,27,25), Color.FromArgb(203,203,186), 12, 253, 292, 40); db.FlatAppearance.BorderSize=0; db.TextAlign=ContentAlignment.MiddleLeft; db.Click += (_,_) => ConnectionSettings(); right.Controls.Add(db);
-        right.Controls.Add(MakeLabel("────────────────────────────", 9, Color.FromArgb(70,78,67), false, 14, 317, 270, 20));
+        var cont = MakeButton("CONTINUAR PARTIDA", Color.FromArgb(26,36,58), Color.White, 38, 194, 266, 43); cont.FlatAppearance.BorderColor=Color.FromArgb(61,83,124); cont.Click += async (_,_) => await LoadGame(); right.Controls.Add(cont);
+        var db = MakeButton("CONFIGURAR BASE DE DATOS", Color.FromArgb(18,27,44), Color.FromArgb(207,222,240), 12, 253, 292, 40); db.FlatAppearance.BorderSize=0; db.TextAlign=ContentAlignment.MiddleLeft; db.Click += (_,_) => ConnectionSettings(); right.Controls.Add(db);
+        right.Controls.Add(MakeLabel("────────────────────────────", 9, Color.FromArgb(48,65,94), false, 14, 317, 270, 20));
         _status = MakeLabel("BASE DE DATOS · SIN COMPROBAR", 9, TextoSuave, false, 15, 345, 270, 24); right.Controls.Add(_status);
-        var conn = MakeButton("COMPROBAR CONEXIÓN", Color.FromArgb(29,35,31), Turquesa, 12, 382, 230, 37); conn.FlatAppearance.BorderColor=Color.FromArgb(62,72,61); conn.Click += async (_,_) => await TestSql(); right.Controls.Add(conn);
+        var conn = MakeButton("COMPROBAR CONEXIÓN", Color.FromArgb(26,36,58), Turquesa, 12, 382, 230, 37); conn.FlatAppearance.BorderColor=Color.FromArgb(61,83,124); conn.Click += async (_,_) => await TestSql(); right.Controls.Add(conn);
         var exit = MakeButton("CERRAR REGISTRO", Color.Transparent, TextoSuave, 12, 450, 180, 34); exit.FlatAppearance.BorderSize=0; exit.TextAlign=ContentAlignment.MiddleLeft; exit.Click += (_,_) => Close(); right.Controls.Add(exit);
     }
 
@@ -135,33 +135,33 @@ public sealed partial class MainForm : Form
 
     private Panel Card()=>new(){Dock=DockStyle.Fill,BackColor=Panel,Margin=new Padding(7)};
     private static Label MakeLabel(string text,float size,Color color,bool bold,int x,int y,int w,int h)=>new(){Text=text,Font=new Font("Bahnschrift",size,bold?FontStyle.Bold:FontStyle.Regular),ForeColor=color,BackColor=Color.Transparent,Left=x,Top=y,Width=w,Height=h};
-    private static Button MakeButton(string text,Color back,Color fore,int x,int y,int w,int h){var b=new Button{Text=text,Left=x,Top=y,Width=w,Height=h,BackColor=back,ForeColor=fore,FlatStyle=FlatStyle.Flat,Font=new Font("Bahnschrift",10,FontStyle.Bold),Cursor=Cursors.Hand};b.FlatAppearance.BorderColor=Color.FromArgb(63,76,62);return b;}
+    private static Button MakeButton(string text,Color back,Color fore,int x,int y,int w,int h){var b=new Button{Text=text,Left=x,Top=y,Width=w,Height=h,BackColor=back,ForeColor=fore,FlatStyle=FlatStyle.Flat,Font=new Font("Bahnschrift",10,FontStyle.Bold),Cursor=Cursors.Hand};b.FlatAppearance.BorderColor=Color.FromArgb(55,76,109);b.FlatAppearance.MouseOverBackColor=Color.FromArgb(Math.Min(255,back.R+12),Math.Min(255,back.G+14),Math.Min(255,back.B+20));return b;}
     private static void DrawBackdrop(Graphics g,Rectangle bounds)
     {
         g.SmoothingMode=SmoothingMode.AntiAlias;
-        using(var sky=new LinearGradientBrush(bounds,Color.FromArgb(37,48,53),Color.FromArgb(13,19,23),LinearGradientMode.Vertical))g.FillRectangle(sky,bounds);
+        using(var sky=new LinearGradientBrush(bounds,Color.FromArgb(28,47,70),Color.FromArgb(8,13,24),LinearGradientMode.Vertical))g.FillRectangle(sky,bounds);
         var random=new Random(41);
         for(int i=0;i<76;i++){int x=random.Next(bounds.Width),y=random.Next(Math.Max(1,bounds.Height/2));int s=random.Next(1,3);int a=random.Next(45,145);using var star=new SolidBrush(Color.FromArgb(a,205,203,184));g.FillEllipse(star,x,y,s,s);}
         int moonX=(int)(bounds.Width*.73), moonY=(int)(bounds.Height*.34), radius=Math.Min(bounds.Width,bounds.Height)/7;
-        using(var moon=new LinearGradientBrush(new Rectangle(moonX-radius,moonY-radius,radius*2,radius*2),Color.FromArgb(220,216,191),Color.FromArgb(93,105,101),LinearGradientMode.ForwardDiagonal))g.FillEllipse(moon,moonX-radius,moonY-radius,radius*2,radius*2);
+        using(var moon=new LinearGradientBrush(new Rectangle(moonX-radius,moonY-radius,radius*2,radius*2),Color.FromArgb(184,226,238),Color.FromArgb(78,113,153),LinearGradientMode.ForwardDiagonal))g.FillEllipse(moon,moonX-radius,moonY-radius,radius*2,radius*2);
         for(int i=0;i<24;i++)
         {
             int crater=random.Next(radius*2/3),cx=random.Next(moonX-radius/2,moonX+radius/2),cy=random.Next(moonY-radius/2,moonY+radius/2);
             if((cx-moonX)*(cx-moonX)+(cy-moonY)*(cy-moonY)>(radius-crater/2)*(radius-crater/2))continue;
-            using var rim=new Pen(Color.FromArgb(32,54,59,56),1);using var floor=new SolidBrush(Color.FromArgb(28,48,53,50));
+            using var rim=new Pen(Color.FromArgb(45,48,80,108),1);using var floor=new SolidBrush(Color.FromArgb(28,30,54,78));
             g.DrawEllipse(rim,cx-crater/2,cy-crater/2,crater,crater);g.FillEllipse(floor,cx-crater/3,cy-crater/3,Math.Max(1,crater*2/3),Math.Max(1,crater*2/3));
         }
         int ground=(int)(bounds.Height*.60);
-        using(var far=new SolidBrush(Color.FromArgb(39,51,52)))g.FillPolygon(far,new[]{new Point(0,ground+20),new Point(bounds.Width/7,ground-50),new Point(bounds.Width/4,ground+2),new Point(bounds.Width*2/5,ground-72),new Point(bounds.Width*3/5,ground+7),new Point(bounds.Width*4/5,ground-42),new Point(bounds.Width,ground+6),new Point(bounds.Width,bounds.Height),new Point(0,bounds.Height)});
-        using(var near=new SolidBrush(Color.FromArgb(20,28,30)))g.FillPolygon(near,new[]{new Point(0,ground+56),new Point(bounds.Width/5,ground+15),new Point(bounds.Width*2/5,ground+61),new Point(bounds.Width*3/5,ground+25),new Point(bounds.Width*4/5,ground+70),new Point(bounds.Width,ground+30),new Point(bounds.Width,bounds.Height),new Point(0,bounds.Height)});
-        using(var texture=new SolidBrush(Color.FromArgb(20,184,164,125)))
+        using(var far=new SolidBrush(Color.FromArgb(29,49,73)))g.FillPolygon(far,new[]{new Point(0,ground+20),new Point(bounds.Width/7,ground-50),new Point(bounds.Width/4,ground+2),new Point(bounds.Width*2/5,ground-72),new Point(bounds.Width*3/5,ground+7),new Point(bounds.Width*4/5,ground-42),new Point(bounds.Width,ground+6),new Point(bounds.Width,bounds.Height),new Point(0,bounds.Height)});
+        using(var near=new SolidBrush(Color.FromArgb(12,20,35)))g.FillPolygon(near,new[]{new Point(0,ground+56),new Point(bounds.Width/5,ground+15),new Point(bounds.Width*2/5,ground+61),new Point(bounds.Width*3/5,ground+25),new Point(bounds.Width*4/5,ground+70),new Point(bounds.Width,ground+30),new Point(bounds.Width,bounds.Height),new Point(0,bounds.Height)});
+        using(var texture=new SolidBrush(Color.FromArgb(20,72,226,218)))
             for(int i=0;i<280;i++){int x=random.Next(bounds.Width),y=random.Next(Math.Max(ground,bounds.Height));int s=random.Next(1,4);g.FillEllipse(texture,x,y,s,s);}
-        using(var line=new Pen(Color.FromArgb(88,174,157,107),1))g.DrawLine(line,0,ground+5,bounds.Width,ground+5);
+        using(var line=new Pen(Color.FromArgb(88,72,226,218),1))g.DrawLine(line,0,ground+5,bounds.Width,ground+5);
         // Baliza remota sobre la cresta, con una luz de señal tenue.
         int beaconX=(int)(bounds.Width*.81), beaconY=ground+6;
-        using(var mast=new Pen(Color.FromArgb(152,166,154),2))g.DrawLine(mast,beaconX,beaconY-45,beaconX,beaconY);
-        using(var pulse=new SolidBrush(Color.FromArgb(100,204,166,105)))g.FillEllipse(pulse,beaconX-5,beaconY-49,10,10);
-        using(var glow=new SolidBrush(Color.FromArgb(190,215,173,120)))g.FillEllipse(glow,beaconX-2,beaconY-46,4,4);
+        using(var mast=new Pen(Color.FromArgb(152,165,203,212),2))g.DrawLine(mast,beaconX,beaconY-45,beaconX,beaconY);
+        using(var pulse=new SolidBrush(Color.FromArgb(100,72,226,218)))g.FillEllipse(pulse,beaconX-5,beaconY-49,10,10);
+        using(var glow=new SolidBrush(Color.FromArgb(220,145,251,246)))g.FillEllipse(glow,beaconX-2,beaconY-46,4,4);
         using(var tint=new LinearGradientBrush(bounds,Color.FromArgb(8,8,12,12),Color.FromArgb(70,8,12,13),LinearGradientMode.Vertical))g.FillRectangle(tint,bounds);
     }
 }
