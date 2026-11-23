@@ -5,10 +5,10 @@ namespace Nexus;
 
 public sealed partial class MainForm : Form
 {
-    private static readonly Color Fondo = Color.FromArgb(6, 7, 18);
-    private static readonly Color Panel = Color.FromArgb(15, 14, 31);
-    private static readonly Color Turquesa = Color.FromArgb(153, 92, 255);
-    private static readonly Color TextoSuave = Color.FromArgb(179, 174, 208);
+    private static readonly Color Fondo = Color.FromArgb(5, 7, 18);
+    private static readonly Color Panel = Color.FromArgb(11, 14, 30);
+    private static readonly Color Turquesa = Color.FromArgb(111, 103, 255);
+    private static readonly Color TextoSuave = Color.FromArgb(166, 180, 211);
     private Image? _nexusLogo;
     private string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;";
     private GameSession? _session;
@@ -24,7 +24,7 @@ public sealed partial class MainForm : Form
 
     public MainForm()
     {
-        Text = "NEXUS | Cazador del Umbral";
+        Text = "NEXUS // SISTEMA DEL MONARCA";
         MinimumSize = new Size(1040, 680);
         Size = new Size(1220, 760);
         StartPosition = FormStartPosition.CenterScreen;
@@ -58,9 +58,9 @@ public sealed partial class MainForm : Form
         root.Controls.Add(menu,0,0);
         if (_nexusLogo is not null)
             menu.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=4, Top=8, Width=menu.ClientSize.Width-8, Height=205, Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right });
-        menu.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
-        menu.Controls.Add(MakeLabel("LA SEÑAL\nTE ESTÁ LLAMANDO", 22, Color.White, true, 8, 235, 300, 66));
-        menu.Controls.Add(MakeLabel("Tres territorios por explorar.\nEncuentra el núcleo y sobrevive.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
+        menu.Controls.Add(MakeLabel("DESPIERTA   ·   EVOLUCIONA   ·   SOBREVIVE", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
+        menu.Controls.Add(MakeLabel("EL SISTEMA\nTE HA ELEGIDO", 22, Color.White, true, 8, 235, 300, 66));
+        menu.Controls.Add(MakeLabel("Tres portales han aparecido.\nEntra al calabozo y reclama tu poder.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
 
         var play = MenuButton("▶   INICIAR JUEGO", 365, true); play.Click += (_,_) => NewCadet(); menu.Controls.Add(play);
         var cont = MenuButton("↻   CONTINUAR PARTIDA", 420, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
@@ -68,7 +68,7 @@ public sealed partial class MainForm : Form
         var info = MenuButton("ⓘ   INFORMACIÓN", 530, false); info.Click += (_,_) => ShowInformation(); menu.Controls.Add(info);
         var exit = MenuButton("↪   SALIR", 585, false); exit.Click += (_,_) => Close(); menu.Controls.Add(exit);
 
-        _status = MakeLabel("●  SISTEMA LISTO  ·  SQL SIN COMPROBAR", 8, Color.FromArgb(157,147,186), false, 9, menu.Height-52, 300, 20);
+        _status = MakeLabel("●  SISTEMA EN LÍNEA  ·  SQL SIN VERIFICAR", 8, Color.FromArgb(157,147,186), false, 9, menu.Height-52, 300, 20);
         _status.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; menu.Controls.Add(_status);
         menu.Resize += (_,_) => { _status.Top=menu.ClientSize.Height-42; };
 
@@ -78,8 +78,8 @@ public sealed partial class MainForm : Form
 
         var profile = MenuCard(scene, 24, 22, 330, 86);
         profile.Controls.Add(MakeLabel("◈", 29, Color.FromArgb(197,152,255), true, 17, 18, 48, 44));
-        profile.Controls.Add(MakeLabel("NIVEL 01   /   CAZADOR", 8.5f, Color.FromArgb(204,184,255), true, 70, 12, 235, 19));
-        profile.Controls.Add(MakeLabel("CADete  ·  SIN EXPEDICIÓN", 10, Color.White, true, 70, 33, 235, 22));
+        profile.Controls.Add(MakeLabel("NIVEL 01   /   DESPERTAR", 8.5f, Color.FromArgb(204,184,255), true, 70, 12, 235, 19));
+        profile.Controls.Add(MakeLabel("CAZADOR  ·  SIN REGISTRO", 10, Color.White, true, 70, 33, 235, 22));
         profile.Controls.Add(MakeLabel("ENERGÍA", 7.5f, TextoSuave, false, 70, 59, 56, 15));
         profile.Controls.Add(MakeLabel("100 / 100", 7.5f, Color.White, true, 226, 59, 78, 15));
         profile.Paint += (_,e) =>
@@ -90,18 +90,18 @@ public sealed partial class MainForm : Form
 
         var quest = MenuCard(scene, Math.Max(24,scene.ClientSize.Width-296), 25, 270, 104, true);
         quest.Anchor=AnchorStyles.Top|AnchorStyles.Right;
-        quest.Controls.Add(MakeLabel("◇  MISIÓN PRINCIPAL", 9, Color.FromArgb(255,208,107), true, 15, 12, 235, 20));
-        quest.Controls.Add(MakeLabel("Elige tu próximo territorio", 9, Color.White, true, 15, 38, 240, 21));
-        quest.Controls.Add(MakeLabel("Encuentra el núcleo y vuelve\na la baliza de extracción.", 8, TextoSuave, false, 15, 62, 240, 35));
+        quest.Controls.Add(MakeLabel("▣  MISIÓN DEL SISTEMA", 9, Color.FromArgb(255,208,107), true, 15, 12, 235, 20));
+        quest.Controls.Add(MakeLabel("Selecciona un portal", 9, Color.White, true, 15, 38, 240, 21));
+        quest.Controls.Add(MakeLabel("Derrota al jefe del calabozo y\nregresa al punto de extracción.", 8, TextoSuave, false, 15, 62, 240, 35));
 
-        var caption = MakeLabel("3 TERRITORIOS   /   UNA EXPEDICIÓN", 8.5f, Color.FromArgb(223,207,255), true, 28, scene.Height-177, 340, 18);
+        var caption = MakeLabel("3 PORTALES   /   UNA INCURSIÓN", 8.5f, Color.FromArgb(223,207,255), true, 28, scene.Height-177, 340, 18);
         caption.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; scene.Controls.Add(caption);
         var mission = MenuCard(scene, 22, 0, 340, 126);
         mission.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
         mission.Top=scene.ClientSize.Height-153;
-        mission.Controls.Add(MakeLabel("LA ANOMALÍA PERDIDA", 13, Color.White, true, 16, 13, 300, 24));
-        mission.Controls.Add(MakeLabel("Baliza de extracción   ·   Sector 01", 8.5f, Color.FromArgb(210,199,232), false, 16, 42, 300, 19));
-        mission.Controls.Add(MakeLabel("Recupera el núcleo. Derrota al Guardián.\nRegresa con vida.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
+        mission.Controls.Add(MakeLabel("PORTAL DE RANGO DESCONOCIDO", 13, Color.White, true, 16, 13, 300, 24));
+        mission.Controls.Add(MakeLabel("CALABOZO ACTIVO   ·   SECTOR 01", 8.5f, Color.FromArgb(210,199,232), false, 16, 42, 300, 19));
+        mission.Controls.Add(MakeLabel("Elimina a la criatura jefe. Recupera el núcleo.\nNo permitas que el portal te consuma.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
         scene.Resize += (_,_) => { caption.Top=scene.ClientSize.Height-177; mission.Top=scene.ClientSize.Height-153; quest.Left=Math.Max(24,scene.ClientSize.Width-296); };
 
         var hint = MakeLabel("WASD / FLECHAS  ·  MOVERSE     ESC  ·  PAUSA", 7.5f, Color.FromArgb(190,179,220), false, 25, scene.ClientSize.Height-20, 420, 16);
@@ -137,7 +137,7 @@ public sealed partial class MainForm : Form
 
     private void ShowInformation()
     {
-        MessageBox.Show(this,"NEXUS · CAZADOR DEL UMBRAL\n\nExplora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
+        MessageBox.Show(this,"NEXUS · SISTEMA DEL MONARCA\n\nExplora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
     }
 
     private static void DrawMenuBackdrop(Graphics g, Rectangle bounds)
@@ -192,12 +192,12 @@ public sealed partial class MainForm : Form
         var map = new ComboBox { Left=35,Top=200,Width=340,DropDownStyle=ComboBoxStyle.DropDownList,FlatStyle=FlatStyle.Flat };
         foreach(string mapName in GameSession.NombresMapas) map.Items.Add(mapName);
         map.SelectedIndex=0;
-        dlg.Controls.Add(MakeLabel("PREPARAR EXPEDICIÓN", 15, Turquesa, true, 35, 20, 320, 28));
+        dlg.Controls.Add(MakeLabel("REGISTRO DEL CAZADOR", 15, Turquesa, true, 35, 20, 320, 28));
         dlg.Controls.Add(MakeLabel("Nombre",10,Color.White,false,35,42,100,20)); dlg.Controls.Add(name);
         dlg.Controls.Add(MakeLabel("Edad",10,Color.White,false,35,106,100,20)); dlg.Controls.Add(age);
         dlg.Controls.Add(MakeLabel("Territorio",10,Color.White,false,35,176,120,20)); dlg.Controls.Add(map);
-        var start=MakeButton("ENTRAR A LA EXPEDICIÓN",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){MessageBox.Show(dlg,ex.Message,"Datos del cadete");}}; dlg.Controls.Add(start);
-        dlg.Controls.Add(MakeLabel("Cada territorio conserva su propio mapa y partida.",8.5f,TextoSuave,false,35,318,340,22));
+        var start=MakeButton("ACEPTAR Y DESPERTAR",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){MessageBox.Show(dlg,ex.Message,"Datos del cadete");}}; dlg.Controls.Add(start);
+        dlg.Controls.Add(MakeLabel("Cada portal conserva su propio mapa y progreso.",8.5f,TextoSuave,false,35,318,340,22));
         if(dlg.ShowDialog(this)==DialogResult.OK) ShowGame();
     }
 
