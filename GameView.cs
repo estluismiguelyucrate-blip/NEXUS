@@ -13,17 +13,17 @@ public sealed partial class MainForm
         root.RowStyles.Add(new RowStyle(SizeType.Absolute,72)); root.RowStyles.Add(new RowStyle(SizeType.Percent,100)); Controls.Add(root);
 
         var header = new Panel { Dock=DockStyle.Fill }; root.Controls.Add(header,0,0); root.SetColumnSpan(header,2);
-        header.Controls.Add(MakeLabel("N /",21,Turquesa,true,4,6,70,32));
-        header.Controls.Add(MakeLabel("LA ANOMALÍA PERDIDA",17,Color.White,true,89,2,370,30));
-        header.Controls.Add(MakeLabel("MISIÓN 01    /    SECTOR H3    /    ENLACE DE CAMPO",9,TextoSuave,false,91,34,440,22));
-        var back=MakeButton("VOLVER AL PUESTO",Color.FromArgb(35,42,43),Color.White,0,12,182,40);
+        header.Controls.Add(MakeLabel("NEXUS",15,Turquesa,true,4,8,84,28));
+        header.Controls.Add(MakeLabel("LA ANOMALÍA PERDIDA",17,Color.White,true,96,2,370,30));
+        header.Controls.Add(MakeLabel("MISIÓN 01    /    SECTOR H3    /    ENLACE DE CAMPO",9,TextoSuave,false,98,34,440,22));
+        var back=MakeButton("VOLVER AL PUESTO",Color.FromArgb(26,36,58),Color.White,0,12,182,40);
         back.Anchor=AnchorStyles.Top|AnchorStyles.Right;back.Left=ClientSize.Width-236;back.Click+=async(_,_)=>{await SaveGame(false);ShowMenu();};header.Controls.Add(back);
 
         var mapPanel=Card();root.Controls.Add(mapPanel,0,1);
         mapPanel.Controls.Add(MakeLabel("TRAZADO RECONOCIDO",11,Turquesa,true,22,17,360,26));
         mapPanel.Controls.Add(MakeLabel("H3   /   4 × 5 ZONAS   ·   CARTOGRAFÍA PARCIAL",9,TextoSuave,false,22,43,430,22));
         mapPanel.Controls.Add(MakeLabel("⌂ BASE     ◆ SUMINISTRO     ⚡ ANOMALÍA     ◉ CADETE",9,TextoSuave,false,22,72,510,23));
-        var grid=new Panel{Left=22,Top=112,Width=570,Height=400,BackColor=Color.FromArgb(15,21,23)};mapPanel.Controls.Add(grid);
+        var grid=new Panel{Left=22,Top=112,Width=570,Height=400,BackColor=Color.FromArgb(11,17,30)};mapPanel.Controls.Add(grid);
         for(int r=0;r<4;r++)for(int c=0;c<5;c++)
         {
             int rr=r,cc=c;var tile=new Button{Left=12+c*108+(r%2)*17,Top=12+r*93,Width=94,Height=78,FlatStyle=FlatStyle.Flat,Font=new Font("Segoe UI Symbol",17),Tag=(r,c),Cursor=Cursors.Hand};
@@ -67,9 +67,9 @@ public sealed partial class MainForm
             bool here=r==game.Mapa.Fila&&c==game.Mapa.Columna,seen=game.Mapa.FueVisitada(r,c);
             TipoCelda type=game.Mapa.TipoEn(r,c);var tile=_tiles[r,c];
             tile.Text=here?"◉":!seen?"·":type switch{TipoCelda.Recurso=>"◆",TipoCelda.Base=>"⌂",TipoCelda.Anomalia=>"⚡",_=>"·"};
-            tile.BackColor=here?Color.FromArgb(78,77,53):!seen?Color.FromArgb(28,36,34):type switch{TipoCelda.Recurso=>Color.FromArgb(45,64,53),TipoCelda.Base=>Color.FromArgb(51,67,65),TipoCelda.Anomalia=>Color.FromArgb(70,45,42),_=>Color.FromArgb(38,47,43)};
-            tile.ForeColor=here?Color.FromArgb(243,212,132):type==TipoCelda.Anomalia?Color.FromArgb(225,143,113):Color.FromArgb(202,206,190);
-            tile.FlatAppearance.BorderColor=here?Turquesa:Color.FromArgb(61,69,61);
+            tile.BackColor=here?Color.FromArgb(30,81,92):!seen?Color.FromArgb(21,31,49):type switch{TipoCelda.Recurso=>Color.FromArgb(28,63,69),TipoCelda.Base=>Color.FromArgb(31,58,76),TipoCelda.Anomalia=>Color.FromArgb(73,42,70),_=>Color.FromArgb(27,40,58)};
+            tile.ForeColor=here?Color.FromArgb(145,251,244):type==TipoCelda.Anomalia?Color.FromArgb(228,159,232):Color.FromArgb(211,225,240);
+            tile.FlatAppearance.BorderColor=here?Turquesa:Color.FromArgb(53,72,101);
             tile.Enabled=game.EnemigoActual is null&&!game.Derrotado&&!game.MisionCompletada;
         }
         Cadete cadete=game.Cadete;
@@ -88,9 +88,9 @@ public sealed partial class MainForm
         if(_session is null)return;
         g.SmoothingMode=System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         int width=Math.Max(1,bounds.Width-4);
-        using var back=new SolidBrush(Color.FromArgb(44,52,44));
-        using var energy=new SolidBrush(Color.FromArgb(185,161,112));
-        using var stability=new SolidBrush(Color.FromArgb(111,143,123));
+        using var back=new SolidBrush(Color.FromArgb(35,48,69));
+        using var energy=new SolidBrush(Color.FromArgb(72,226,218));
+        using var stability=new SolidBrush(Color.FromArgb(159,126,244));
         g.FillRectangle(back,0,3,width,7);g.FillRectangle(back,0,22,width,7);
         g.FillRectangle(energy,0,3,width*_session.Cadete.Energia/Cadete.MAX,7);
         g.FillRectangle(stability,0,22,width*_session.Cadete.Estabilidad/Cadete.MAX,7);
@@ -112,10 +112,10 @@ public sealed partial class MainForm
             _encounterPanel.Controls.Add(MakeLabel(message,9,TextoSuave,false,12,20,250,50));return;
         }
         _encounterPanel.Controls.Add(MakeLabel($"{enemy.Nombre.ToUpperInvariant()}\n{enemy.Tipo}  ·  ENERGÍA {enemy.Energia}/{enemy.EnergiaMax}",9,Color.White,true,12,7,250,45));
-        var attack=MakeButton("ATACAR",Color.FromArgb(104,57,48),Color.White,12,58,112,34);attack.Click+=(_,_)=>Act(_session!.Atacar());_encounterPanel.Controls.Add(attack);
-        var analyze=MakeButton("ANALIZAR",Color.FromArgb(56,65,56),Color.White,137,58,122,34);analyze.Click+=(_,_)=>Act(_session!.Analizar());_encounterPanel.Controls.Add(analyze);
-        var use=MakeButton("USAR OBJETO",Color.FromArgb(56,65,56),Color.White,12,103,112,34);use.Click+=(_,_)=>OpenInventory();_encounterPanel.Controls.Add(use);
-        var flee=MakeButton("ESCAPAR",Color.FromArgb(56,65,56),Color.White,137,103,122,34);flee.Click+=(_,_)=>Act(_session!.Escapar());_encounterPanel.Controls.Add(flee);
+        var attack=MakeButton("ATACAR",Color.FromArgb(112,48,68),Color.White,12,58,112,34);attack.Click+=(_,_)=>Act(_session!.Atacar());_encounterPanel.Controls.Add(attack);
+        var analyze=MakeButton("ANALIZAR",Color.FromArgb(29,55,79),Color.White,137,58,122,34);analyze.Click+=(_,_)=>Act(_session!.Analizar());_encounterPanel.Controls.Add(analyze);
+        var use=MakeButton("USAR OBJETO",Color.FromArgb(29,55,79),Color.White,12,103,112,34);use.Click+=(_,_)=>OpenInventory();_encounterPanel.Controls.Add(use);
+        var flee=MakeButton("ESCAPAR",Color.FromArgb(29,55,79),Color.White,137,103,122,34);flee.Click+=(_,_)=>Act(_session!.Escapar());_encounterPanel.Controls.Add(flee);
     }
 
     private void OpenInventory()
@@ -123,7 +123,7 @@ public sealed partial class MainForm
         if(_session is null)return;var inventory=_session.Cadete.Inventario;
         using var dlg=new Form{Text="Inventario de campo",Size=new Size(540,390),StartPosition=FormStartPosition.CenterParent,BackColor=Panel,ForeColor=Color.White,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
         dlg.Controls.Add(MakeLabel($"EQUIPO   /   {inventory.Cantidad} DE {Inventario.Capacidad} ESPACIOS",12,Turquesa,true,22,18,450,28));
-        var list=new ListBox{Left=22,Top=55,Width=475,Height=210,BackColor=Color.FromArgb(14,20,21),ForeColor=Color.White,Font=new Font("Segoe UI",10)};
+        var list=new ListBox{Left=22,Top=55,Width=475,Height=210,BackColor=Color.FromArgb(11,17,30),ForeColor=Color.White,Font=new Font("Segoe UI",10)};
         foreach(var item in inventory.Objetos)list.Items.Add($"{item.Nombre}   —   {item.Descripcion}");dlg.Controls.Add(list);
         var use=MakeButton("USAR SELECCIÓN",Turquesa,Fondo,22,282,210,42);use.Click+=(_,_)=>{if(list.SelectedIndex<0){MessageBox.Show(dlg,"Selecciona un objeto primero.");return;}Act(_session.UsarObjeto(list.SelectedIndex));dlg.DialogResult=DialogResult.OK;dlg.Close();};dlg.Controls.Add(use);
         var drop=MakeButton("DESCARTAR",Color.FromArgb(45,51,47),Color.White,245,282,130,42);drop.Click+=(_,_)=>{if(list.SelectedIndex<0){MessageBox.Show(dlg,"Selecciona un objeto primero.");return;}if(MessageBox.Show(dlg,"¿Descartar este objeto?","Confirmar",MessageBoxButtons.YesNo,MessageBoxIcon.Question)==DialogResult.Yes){_session.DescartarObjeto(list.SelectedIndex);dlg.DialogResult=DialogResult.OK;dlg.Close();}};dlg.Controls.Add(drop);
