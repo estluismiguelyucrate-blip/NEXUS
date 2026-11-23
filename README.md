@@ -17,7 +17,8 @@ El script restaura las dependencias y abre el juego. También puedes abrir `NEXU
 ## Expediciones
 
 - Elige entre **Ruinas del Umbral**, **Bosque Carmesí** y **Ciudad Sumergida**.
-- Explora el tablero interactivo 4 × 5 con el ratón, WASD o las flechas.
+- Recorre los calabozos con movimiento continuo en tiempo real, cámara que sigue al cazador, encuentros con enemigos y escenarios propios para cada mapa.
+- Usa WASD o las flechas para moverte, Shift para impulsarte/esquivar, J o Espacio para atacar y Q para huir de un encuentro.
 - Investiga anomalías, combate al Guardián, reúne objetos y recupera el núcleo.
 - Administra energía, estabilidad, inventario y experiencia; luego vuelve a la extracción.
 - Guarda o recupera partidas en SQL Server o LocalDB desde la configuración.
