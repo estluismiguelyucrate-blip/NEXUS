@@ -1,4 +1,4 @@
-name: NEXUS Windows Desktop
+name: NEXUS Windows Installer
 
 on:
   push:
@@ -15,22 +15,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build Windows app
+  build-installer:
+    name: Build NEXUS installer
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore "NEXUS 2.0.csproj"
+      - name: Restore Windows dependencies
+        run: dotnet restore "NEXUS 2.0.csproj" --runtime win-x64
 
-      - name: Build Release
-        run: dotnet build "NEXUS 2.0.csproj" --configuration Release --no-restore
+      - name: Publish self-contained app
+        run: dotnet publish "NEXUS 2.0.csproj" --configuration Release --runtime win-x64 --self-contained true --no-restore --output publish
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Compile installer
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          iscc.exe /O"artifacts" "installer\NEXUS.iss"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v6
+        with:
+          name: NEXUS-Setup-v2.0.0
+          path: artifacts/NEXUS-Setup-v2.0.0.exe
+          if-no-files-found: error
+          retention-days: 14
