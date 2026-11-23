@@ -16,7 +16,8 @@
 
   <ItemGroup>
     <Compile Remove="nexus visual/**/*.cs" />
-    <None Update="assets\nexus-logo.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Remove="assets\nexus-logo.png" />
+    <Content Include="assets\nexus-logo.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <None Update="assets\nexus.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
   </ItemGroup>
