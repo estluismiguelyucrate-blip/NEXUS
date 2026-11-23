@@ -60,7 +60,7 @@ public sealed partial class MainForm : Form
             menu.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=4, Top=8, Width=menu.ClientSize.Width-8, Height=205, Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right });
         menu.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
         menu.Controls.Add(MakeLabel("LA SEÑAL\nTE ESTÁ LLAMANDO", 22, Color.White, true, 8, 235, 300, 66));
-        menu.Controls.Add(MakeLabel("Una expedición. Un núcleo perdido.\nSobrevive a la mazmorra H3.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
+        menu.Controls.Add(MakeLabel("Tres territorios por explorar.\nEncuentra el núcleo y sobrevive.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
 
         var play = MenuButton("▶   INICIAR JUEGO", 365, true); play.Click += (_,_) => NewCadet(); menu.Controls.Add(play);
         var cont = MenuButton("↻   CONTINUAR PARTIDA", 420, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
@@ -91,10 +91,10 @@ public sealed partial class MainForm : Form
         var quest = MenuCard(scene, Math.Max(24,scene.ClientSize.Width-296), 25, 270, 104, true);
         quest.Anchor=AnchorStyles.Top|AnchorStyles.Right;
         quest.Controls.Add(MakeLabel("◇  MISIÓN PRINCIPAL", 9, Color.FromArgb(255,208,107), true, 15, 12, 235, 20));
-        quest.Controls.Add(MakeLabel("Explora la mazmorra H3", 9, Color.White, true, 15, 38, 240, 21));
+        quest.Controls.Add(MakeLabel("Elige tu próximo territorio", 9, Color.White, true, 15, 38, 240, 21));
         quest.Controls.Add(MakeLabel("Encuentra el núcleo y vuelve\na la baliza de extracción.", 8, TextoSuave, false, 15, 62, 240, 35));
 
-        var caption = MakeLabel("SECTOR H3   /   RUINAS DEL UMBRAL", 8.5f, Color.FromArgb(223,207,255), true, 28, scene.Height-177, 340, 18);
+        var caption = MakeLabel("3 TERRITORIOS   /   UNA EXPEDICIÓN", 8.5f, Color.FromArgb(223,207,255), true, 28, scene.Height-177, 340, 18);
         caption.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; scene.Controls.Add(caption);
         var mission = MenuCard(scene, 22, 0, 340, 126);
         mission.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
@@ -137,7 +137,7 @@ public sealed partial class MainForm : Form
 
     private void ShowInformation()
     {
-        MessageBox.Show(this,"NEXUS · CAZADOR DEL UMBRAL\n\nExplora el sector H3, reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD o flechas. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
+        MessageBox.Show(this,"NEXUS · CAZADOR DEL UMBRAL\n\nExplora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
     }
 
     private static void DrawMenuBackdrop(Graphics g, Rectangle bounds)
@@ -186,11 +186,18 @@ public sealed partial class MainForm : Form
 
     private void NewCadet()
     {
-        using var dlg = new Form { Text="Nuevo cadete", Size=new Size(390,300), StartPosition=FormStartPosition.CenterParent, BackColor=Panel, ForeColor=Color.White, FormBorderStyle=FormBorderStyle.FixedDialog, MaximizeBox=false, MinimizeBox=false };
-        var name = new TextBox { Left=35,Top=60,Width=300,Text="Cadete" };
+        using var dlg = new Form { Text="Nueva expedición", Size=new Size(430,390), StartPosition=FormStartPosition.CenterParent, BackColor=Panel, ForeColor=Color.White, FormBorderStyle=FormBorderStyle.FixedDialog, MaximizeBox=false, MinimizeBox=false };
+        var name = new TextBox { Left=35,Top=60,Width=340,Text="Cadete" };
         var age = new NumericUpDown { Left=35,Top=130,Width=130,Minimum=18,Maximum=60,Value=24 };
-        dlg.Controls.Add(MakeLabel("IDENTIFICACIÓN DEL CADETE", 15, Turquesa, true, 35, 20, 320, 28)); dlg.Controls.Add(MakeLabel("Nombre",10,Color.White,false,35,42,100,20)); dlg.Controls.Add(name); dlg.Controls.Add(MakeLabel("Edad",10,Color.White,false,35,106,100,20)); dlg.Controls.Add(age);
-        var start=MakeButton("ENTRAR AL SECTOR",Turquesa,Fondo,35,185,300,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){MessageBox.Show(dlg,ex.Message,"Datos del cadete");}}; dlg.Controls.Add(start);
+        var map = new ComboBox { Left=35,Top=200,Width=340,DropDownStyle=ComboBoxStyle.DropDownList,FlatStyle=FlatStyle.Flat };
+        foreach(string mapName in GameSession.NombresMapas) map.Items.Add(mapName);
+        map.SelectedIndex=0;
+        dlg.Controls.Add(MakeLabel("PREPARAR EXPEDICIÓN", 15, Turquesa, true, 35, 20, 320, 28));
+        dlg.Controls.Add(MakeLabel("Nombre",10,Color.White,false,35,42,100,20)); dlg.Controls.Add(name);
+        dlg.Controls.Add(MakeLabel("Edad",10,Color.White,false,35,106,100,20)); dlg.Controls.Add(age);
+        dlg.Controls.Add(MakeLabel("Territorio",10,Color.White,false,35,176,120,20)); dlg.Controls.Add(map);
+        var start=MakeButton("ENTRAR A LA EXPEDICIÓN",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){MessageBox.Show(dlg,ex.Message,"Datos del cadete");}}; dlg.Controls.Add(start);
+        dlg.Controls.Add(MakeLabel("Cada territorio conserva su propio mapa y partida.",8.5f,TextoSuave,false,35,318,340,22));
         if(dlg.ShowDialog(this)==DialogResult.OK) ShowGame();
     }
 
@@ -309,3 +316,4 @@ public sealed partial class MainForm : Form
         using(var tint=new LinearGradientBrush(bounds,Color.FromArgb(8,8,12,12),Color.FromArgb(70,8,12,13),LinearGradientMode.Vertical))g.FillRectangle(tint,bounds);
     }
 }
+
