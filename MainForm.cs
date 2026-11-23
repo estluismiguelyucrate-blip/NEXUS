@@ -44,30 +44,144 @@ public sealed partial class MainForm : Form
     private void ShowMenu()
     {
         Controls.Clear();
-        var root = new TableLayoutPanel { Dock=DockStyle.Fill, ColumnCount=2, Padding=new Padding(16,14,20,16), BackColor=Fondo };
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 69)); root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent,100)); Controls.Add(root);
-        var art = new Panel { Dock=DockStyle.Fill, BackColor=Panel, Margin=new Padding(0,8,18,8) }; art.Paint += (_,e) => DrawBackdrop(e.Graphics, art.ClientRectangle); root.Controls.Add(art,0,0);
+        var root = new TableLayoutPanel { Dock=DockStyle.Fill, ColumnCount=2, RowCount=1, BackColor=Fondo };
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 356));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        Controls.Add(root);
+
+        var menu = new Panel { Dock=DockStyle.Fill, BackColor=Color.FromArgb(8,7,19), Padding=new Padding(24,16,24,18) };
+        menu.Paint += (_,e) =>
+        {
+            using var edge = new Pen(Color.FromArgb(75,153,92,255));
+            e.Graphics.DrawLine(edge, menu.Width-1, 0, menu.Width-1, menu.Height);
+        };
+        root.Controls.Add(menu,0,0);
         if (_nexusLogo is not null)
-            art.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=24, Top=0, Width=270, Height=180 });
-        art.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 9, Color.FromArgb(224,211,255), true, 42, 170, 340, 20));
-        art.Controls.Add(MakeLabel("EL UMBRAL\nTE ESTÁ LLAMANDO", 29, Color.White, true, 38, 203, 440, 91));
-        art.Controls.Add(MakeLabel("Una señal rompe el silencio de H3.\nEn las ruinas, algo despertó.", 12, Color.FromArgb(229,225,248), false, 42, 310, 370, 48));
-        art.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(190,153,92,255),1);e.Graphics.DrawLine(pen,40,382,285,382);e.Graphics.DrawLine(pen,40,382,40,406);};
-        art.Controls.Add(MakeLabel("MISIÓN PRINCIPAL     /     SECTOR H3", 9, Color.FromArgb(196,159,255), true, 42, 414, 320, 22));
-        art.Controls.Add(MakeLabel("RECUPERA EL NÚCLEO Y SOBREVIVE", 9, Color.FromArgb(241,235,255), true, 42, 443, 330, 22));
-        art.Controls.Add(MakeLabel("Explora las ruinas. Vence al Guardián.\nRegresa a la baliza de extracción.", 11, TextoSuave, false, 42, 472, 360, 46));
-        var right = new Panel { Dock=DockStyle.Fill, BackColor=Fondo, Padding=new Padding(3,54,4,24) }; root.Controls.Add(right,1,0);
-        right.Controls.Add(MakeLabel("CAZADOR DEL\nUMBRAL", 21, Color.White, true, 12, 6, 280, 61));
-        right.Controls.Add(MakeLabel("◆  MISIÓN PRINCIPAL  ·  H3", 9, Color.FromArgb(196,159,255), true, 15, 79, 260, 26));
-        right.Controls.Add(MakeLabel("Localiza el núcleo. Derrota al Guardián.", 9, TextoSuave, false, 15, 99, 285, 24));
-        var play = MakeButton("▶   INICIAR JUEGO", Turquesa, Color.White, 12, 139, 292, 50); play.FlatAppearance.BorderSize=0; play.Click += (_,_) => NewCadet(); right.Controls.Add(play);
-        var cont = MakeButton("CONTINUAR PARTIDA", Color.FromArgb(28,22,52), Color.White, 38, 203, 266, 43); cont.FlatAppearance.BorderColor=Color.FromArgb(104,77,166); cont.Click += async (_,_) => await LoadGame(); right.Controls.Add(cont);
-        var db = MakeButton("⚙   CONFIGURACIÓN SQL", Color.FromArgb(18,16,37), Color.FromArgb(222,215,244), 12, 258, 292, 40); db.FlatAppearance.BorderSize=0; db.TextAlign=ContentAlignment.MiddleLeft; db.Click += (_,_) => ConnectionSettings(); right.Controls.Add(db);
-        right.Controls.Add(MakeLabel("────────────────────────────", 9, Color.FromArgb(67,54,100), false, 14, 315, 270, 20));
-        _status = MakeLabel("BASE DE DATOS · SIN COMPROBAR", 9, TextoSuave, false, 15, 345, 270, 24); right.Controls.Add(_status);
-        var conn = MakeButton("COMPROBAR CONEXIÓN", Color.FromArgb(28,22,52), Turquesa, 12, 382, 230, 37); conn.FlatAppearance.BorderColor=Color.FromArgb(104,77,166); conn.Click += async (_,_) => await TestSql(); right.Controls.Add(conn);
-        var exit = MakeButton("SALIR", Color.Transparent, TextoSuave, 12, 450, 180, 34); exit.FlatAppearance.BorderSize=0; exit.TextAlign=ContentAlignment.MiddleLeft; exit.Click += (_,_) => Close(); right.Controls.Add(exit);
+            menu.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=4, Top=8, Width=menu.ClientSize.Width-8, Height=205, Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right });
+        menu.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
+        menu.Controls.Add(MakeLabel("LA SEÑAL\nTE ESTÁ LLAMANDO", 22, Color.White, true, 8, 235, 300, 66));
+        menu.Controls.Add(MakeLabel("Una expedición. Un núcleo perdido.\nSobrevive a la mazmorra H3.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
+
+        var play = MenuButton("▶   INICIAR JUEGO", 365, true); play.Click += (_,_) => NewCadet(); menu.Controls.Add(play);
+        var cont = MenuButton("↻   CONTINUAR PARTIDA", 420, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
+        var settings = MenuButton("⚙   CONFIGURACIÓN", 475, false); settings.Click += (_,_) => ConnectionSettings(); menu.Controls.Add(settings);
+        var info = MenuButton("ⓘ   INFORMACIÓN", 530, false); info.Click += (_,_) => ShowInformation(); menu.Controls.Add(info);
+        var exit = MenuButton("↪   SALIR", 585, false); exit.Click += (_,_) => Close(); menu.Controls.Add(exit);
+
+        _status = MakeLabel("●  SISTEMA LISTO  ·  SQL SIN COMPROBAR", 8, Color.FromArgb(157,147,186), false, 9, menu.Height-52, 300, 20);
+        _status.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; menu.Controls.Add(_status);
+        menu.Resize += (_,_) => { _status.Top=menu.ClientSize.Height-42; };
+
+        var scene = new Panel { Dock=DockStyle.Fill, BackColor=Fondo, Margin=Padding.Empty };
+        scene.Paint += (_,e) => DrawMenuBackdrop(e.Graphics, scene.ClientRectangle);
+        root.Controls.Add(scene,1,0);
+
+        var profile = MenuCard(scene, 24, 22, 330, 86);
+        profile.Controls.Add(MakeLabel("◈", 29, Color.FromArgb(197,152,255), true, 17, 18, 48, 44));
+        profile.Controls.Add(MakeLabel("NIVEL 01   /   CAZADOR", 8.5f, Color.FromArgb(204,184,255), true, 70, 12, 235, 19));
+        profile.Controls.Add(MakeLabel("CADete  ·  SIN EXPEDICIÓN", 10, Color.White, true, 70, 33, 235, 22));
+        profile.Controls.Add(MakeLabel("ENERGÍA", 7.5f, TextoSuave, false, 70, 59, 56, 15));
+        profile.Controls.Add(MakeLabel("100 / 100", 7.5f, Color.White, true, 226, 59, 78, 15));
+        profile.Paint += (_,e) =>
+        {
+            using var bar = new SolidBrush(Color.FromArgb(45,37,69)); e.Graphics.FillRectangle(bar,70,77,233,3);
+            using var fill = new LinearGradientBrush(new Rectangle(70,77,233,3),Color.FromArgb(162,91,255),Color.FromArgb(74,147,255),LinearGradientMode.Horizontal); e.Graphics.FillRectangle(fill,70,77,233,3);
+        };
+
+        var quest = MenuCard(scene, Math.Max(24,scene.ClientSize.Width-296), 25, 270, 104, true);
+        quest.Anchor=AnchorStyles.Top|AnchorStyles.Right;
+        quest.Controls.Add(MakeLabel("◇  MISIÓN PRINCIPAL", 9, Color.FromArgb(255,208,107), true, 15, 12, 235, 20));
+        quest.Controls.Add(MakeLabel("Explora la mazmorra H3", 9, Color.White, true, 15, 38, 240, 21));
+        quest.Controls.Add(MakeLabel("Encuentra el núcleo y vuelve\na la baliza de extracción.", 8, TextoSuave, false, 15, 62, 240, 35));
+
+        var caption = MakeLabel("SECTOR H3   /   RUINAS DEL UMBRAL", 8.5f, Color.FromArgb(223,207,255), true, 28, scene.Height-177, 340, 18);
+        caption.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; scene.Controls.Add(caption);
+        var mission = MenuCard(scene, 22, 0, 340, 126);
+        mission.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
+        mission.Top=scene.ClientSize.Height-153;
+        mission.Controls.Add(MakeLabel("LA ANOMALÍA PERDIDA", 13, Color.White, true, 16, 13, 300, 24));
+        mission.Controls.Add(MakeLabel("Baliza de extracción   ·   Sector 01", 8.5f, Color.FromArgb(210,199,232), false, 16, 42, 300, 19));
+        mission.Controls.Add(MakeLabel("Recupera el núcleo. Derrota al Guardián.\nRegresa con vida.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
+        scene.Resize += (_,_) => { caption.Top=scene.ClientSize.Height-177; mission.Top=scene.ClientSize.Height-153; quest.Left=Math.Max(24,scene.ClientSize.Width-296); };
+
+        var hint = MakeLabel("WASD / FLECHAS  ·  MOVERSE     ESC  ·  PAUSA", 7.5f, Color.FromArgb(190,179,220), false, 25, scene.ClientSize.Height-20, 420, 16);
+        hint.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; scene.Controls.Add(hint);
+    }
+
+    private Button MenuButton(string text, int top, bool primary)
+    {
+        var button=MakeButton(text, primary?Color.FromArgb(112,65,222):Color.FromArgb(19,16,38), Color.White, 4, top, 280, 43);
+        button.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
+        button.TextAlign=ContentAlignment.MiddleLeft;
+        button.Padding=new Padding(17,0,0,0);
+        button.FlatAppearance.BorderColor=primary?Color.FromArgb(219,182,255):Color.FromArgb(84,64,127);
+        button.FlatAppearance.BorderSize=primary?2:1;
+        button.FlatAppearance.MouseOverBackColor=primary?Color.FromArgb(145,89,255):Color.FromArgb(42,29,73);
+        return button;
+    }
+
+    private Panel MenuCard(Control parent, int left, int top, int width, int height, bool gold=false)
+    {
+        var card=new Panel { Left=left, Top=top, Width=width, Height=height, BackColor=Color.FromArgb(224,10,8,25), Anchor=AnchorStyles.Top|AnchorStyles.Left };
+        card.Paint+=(_,e)=>
+        {
+            using var pen=new Pen(gold?Color.FromArgb(170,255,194,91):Color.FromArgb(155,153,92,255),1.2f);
+            e.Graphics.SmoothingMode=SmoothingMode.AntiAlias;
+            e.Graphics.DrawRectangle(pen,0,0,card.Width-1,card.Height-1);
+            using var accent=new SolidBrush(gold?Color.FromArgb(255,194,91):Color.FromArgb(153,92,255));
+            e.Graphics.FillRectangle(accent,0,0,3,card.Height);
+        };
+        parent.Controls.Add(card);
+        return card;
+    }
+
+    private void ShowInformation()
+    {
+        MessageBox.Show(this,"NEXUS · CAZADOR DEL UMBRAL\n\nExplora el sector H3, reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD o flechas. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
+    }
+
+    private static void DrawMenuBackdrop(Graphics g, Rectangle bounds)
+    {
+        if(bounds.Width<1||bounds.Height<1)return;
+        g.SmoothingMode=SmoothingMode.AntiAlias;
+        using(var sky=new LinearGradientBrush(bounds,Color.FromArgb(46,31,105),Color.FromArgb(5,5,17),LinearGradientMode.Vertical))g.FillRectangle(sky,bounds);
+        var random=new Random(41);
+        for(int i=0;i<170;i++)
+        {
+            int x=random.Next(bounds.Width),y=random.Next(Math.Max(1,bounds.Height*3/4)),s=random.Next(1,3);
+            using var star=new SolidBrush(Color.FromArgb(random.Next(45,175),220,206,255));g.FillEllipse(star,x,y,s,s);
+        }
+        int radius=Math.Max(44,Math.Min(bounds.Width,bounds.Height)/7), moonX=(int)(bounds.Width*.69),moonY=(int)(bounds.Height*.25);
+        using(var glow=new SolidBrush(Color.FromArgb(25,174,120,255)))g.FillEllipse(glow,moonX-radius*2,moonY-radius*2,radius*4,radius*4);
+        using(var moon=new LinearGradientBrush(new Rectangle(moonX-radius,moonY-radius,radius*2,radius*2),Color.FromArgb(235,222,255),Color.FromArgb(99,86,177),LinearGradientMode.ForwardDiagonal))g.FillEllipse(moon,moonX-radius,moonY-radius,radius*2,radius*2);
+        for(int i=0;i<14;i++)
+        {
+            int x=(i*137+50)%Math.Max(1,bounds.Width),w=36+(i*17)%45,h=bounds.Height/5+(i*43)%(Math.Max(1,bounds.Height/3));int y=bounds.Height*61/100-h;
+            using var ruin=new SolidBrush(Color.FromArgb(210,12,8,35));g.FillRectangle(ruin,x,y,w,h);
+            g.FillPolygon(ruin,new[]{new Point(x-8,y+8),new Point(x+w/2,y-19),new Point(x+w+8,y+8)});
+            using var window=new SolidBrush(Color.FromArgb(90,172,104,255));
+            for(int wy=y+24;wy<bounds.Height*60/100;wy+=34)for(int wx=x+9;wx<x+w-6;wx+=17)g.FillRectangle(window,wx,wy,4,9);
+        }
+        int ground=(int)(bounds.Height*.66);
+        using(var hills=new SolidBrush(Color.FromArgb(242,13,8,31)))g.FillPolygon(hills,new[]{new Point(0,ground+24),new Point(bounds.Width/7,ground-53),new Point(bounds.Width/4,ground+8),new Point(bounds.Width*2/5,ground-85),new Point(bounds.Width*3/5,ground+10),new Point(bounds.Width*4/5,ground-46),new Point(bounds.Width,ground+4),new Point(bounds.Width,bounds.Height),new Point(0,bounds.Height)});
+        using(var groundGlow=new Pen(Color.FromArgb(120,153,92,255),1.2f))g.DrawLine(groundGlow,0,ground+12,bounds.Width,ground+12);
+        DrawMenuHunter(g,(int)(bounds.Width*.67),ground+22,Math.Min(bounds.Height/2,245));
+        using(var shade=new LinearGradientBrush(bounds,Color.FromArgb(12,4,4,10),Color.FromArgb(125,4,3,14),LinearGradientMode.Vertical))g.FillRectangle(shade,bounds);
+    }
+
+    private static void DrawMenuHunter(Graphics g,int x,int y,int height)
+    {
+        if(height<50)return;
+        int head=Math.Max(15,height/9),body=Math.Max(45,height/2);
+        using var silhouette=new SolidBrush(Color.FromArgb(245,5,5,16));
+        using var edge=new Pen(Color.FromArgb(190,153,92,255),2.2f);
+        g.FillEllipse(silhouette,x-head/2,y-height+4,head,head+8);
+        var cloak=new[]{new Point(x-head/2,y-height+head),new Point(x-head,y-height+head+18),new Point(x-body/2,y-10),new Point(x-body/4,y),new Point(x+body/3,y),new Point(x+body/2,y-14),new Point(x+head,y-height+head+18),new Point(x+head/2,y-height+head)};
+        g.FillPolygon(silhouette,cloak);g.DrawLines(edge,new[]{cloak[1],cloak[2],cloak[3],cloak[4],cloak[5],cloak[6]});
+        using var blade=new Pen(Color.FromArgb(225,183,106,255),3);
+        g.DrawLine(blade,x+body/3,y-height/3,x+body,y-height/3-50);
+        using var bladeGlow=new Pen(Color.FromArgb(65,186,94,255),9);g.DrawLine(bladeGlow,x+body/3,y-height/3,x+body,y-height/3-50);
+        using var feet=new Pen(Color.FromArgb(230,6,4,17),Math.Max(8,height/17));g.DrawLine(feet,x-body/5,y-3,x-body/4,y+25);g.DrawLine(feet,x+body/5,y-3,x+body/4,y+25);
     }
 
     private void NewCadet()
