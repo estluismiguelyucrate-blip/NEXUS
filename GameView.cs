@@ -25,27 +25,34 @@ public sealed partial class MainForm
         mapPanel.Controls.Add(MakeLabel("⌂ EXTRACCIÓN     ◈ BOTÍN     ◉ PORTAL     ▲ CAZADOR",9,TextoSuave,false,22,72,510,23));
         _mapScene=new DungeonMapScene{Left=22,Top=105,Width=570,Height=410,Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right};
         _mapScene.Bind(_session,MoveTo,Act);mapPanel.Controls.Add(_mapScene);
-        mapPanel.Controls.Add(MakeLabel("EXPLORACIÓN",9,TextoSuave,true,28,523,120,24));
-        mapPanel.Controls.Add(MakeLabel("WASD MOVER   ·   SHIFT DASH   ·   J / ESPACIO ATACAR   ·   Q HUIR",8.5f,Color.FromArgb(218,211,242),false,145,523,450,24));
-        _log=MakeLabel("El Sistema te observa. Explora el calabozo y reclama el núcleo.",10,Color.FromArgb(235,226,255),false,28,556,610,42);mapPanel.Controls.Add(_log);
+        var exploreLabel=MakeLabel("EXPLORACIÓN",9,TextoSuave,true,28,523,120,24);exploreLabel.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;mapPanel.Controls.Add(exploreLabel);
+        var controlsLabel=MakeLabel("WASD MOVER   ·   SHIFT DASH   ·   J / ESPACIO ATACAR   ·   Q HUIR",8.5f,Color.FromArgb(218,211,242),false,145,523,450,24);controlsLabel.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;mapPanel.Controls.Add(controlsLabel);
+        _log=MakeLabel("El Sistema te observa. Explora el calabozo y reclama el núcleo.",10,Color.FromArgb(235,226,255),false,28,556,610,42);_log.Anchor=AnchorStyles.Left|AnchorStyles.Right|AnchorStyles.Bottom;mapPanel.Controls.Add(_log);
+        mapPanel.Resize+=(_,_)=>
+        {
+            int h=mapPanel.ClientSize.Height;
+            _mapScene.Height=Math.Max(210,h-195);
+            exploreLabel.Top=h-82;controlsLabel.Top=h-82;_log.Top=h-54;
+        };
 
         var side=Card();root.Controls.Add(side,1,1);
         side.Controls.Add(MakeLabel("ESTADO DEL CAZADOR",9,Turquesa,true,20,17,260,22));
         side.Controls.Add(MakeLabel(_session.Cadete.Nombre,16,Color.White,true,20,38,280,30));
-        _stats=MakeLabel("",9,Color.FromArgb(231,226,246),false,20,76,285,42);side.Controls.Add(_stats);
-        _meter=new Panel{Left=20,Top=121,Width=285,Height=39,BackColor=Color.Transparent};
+        _stats=MakeLabel("",8.5f,Color.FromArgb(231,226,246),false,20,70,285,38);side.Controls.Add(_stats);
+        _meter=new Panel{Left=20,Top=109,Width=285,Height=32,BackColor=Color.Transparent};
         _meter.Paint+=(_,e)=>PaintMeters(e.Graphics,_meter.ClientRectangle);
         side.Controls.Add(_meter);
-        side.Controls.Add(MakeLabel("OBJETIVOS DEL SISTEMA",9,Turquesa,true,20,166,240,20));
-        _objectives=MakeLabel("",9,Color.FromArgb(223,218,239),false,20,188,286,82);side.Controls.Add(_objectives);
-        side.Controls.Add(MakeLabel("INVENTARIO DEL CAZADOR",9,Turquesa,true,20,280,240,20));
-        _equipment=MakeLabel("",9,Color.FromArgb(208,199,230),false,20,302,286,56);side.Controls.Add(_equipment);
-        var inventory=MakeButton("MOCHILA",Color.FromArgb(20,24,51),Color.White,20,363,128,36);inventory.Click+=(_,_)=>OpenInventory();side.Controls.Add(inventory);
-        var rest=MakeButton("DESCANSAR",Color.FromArgb(20,24,51),Color.White,158,363,128,36);rest.Click+=(_,_)=>Act(_session.Descansar());side.Controls.Add(rest);
-        var extract=MakeButton("EXTRACCIÓN",Color.FromArgb(20,24,51),Turquesa,20,407,128,36);extract.Click+=(_,_)=>{Act(_session.Extraer());if(_session.MisionCompletada)ShowSystemMessage("Núcleo recuperado y Guardián superado. Recompensa: +100 XP y un módulo desconocido.","Misión completada",MessageBoxButtons.OK,MessageBoxIcon.Information);};side.Controls.Add(extract);
-        var save=MakeButton("GUARDAR",Color.FromArgb(20,24,51),Color.White,158,407,128,36);save.Click+=async(_,_)=>await SaveGame(true);side.Controls.Add(save);
-        side.Controls.Add(MakeLabel("OBJETIVO HOSTIL",9,Turquesa,true,20,455,260,20));
-        _encounterPanel=new Panel{Left=16,Top=478,Width=278,Height=156,BackColor=Color.FromArgb(9,14,31)};side.Controls.Add(_encounterPanel);
+        side.Controls.Add(MakeLabel("OBJETIVOS DEL SISTEMA",9,Turquesa,true,20,147,240,20));
+        _objectives=MakeLabel("",8.5f,Color.FromArgb(223,218,239),false,20,168,286,66);side.Controls.Add(_objectives);
+        side.Controls.Add(MakeLabel("INVENTARIO DEL CAZADOR",9,Turquesa,true,20,242,240,20));
+        _equipment=MakeLabel("",8.5f,Color.FromArgb(208,199,230),false,20,263,286,43);side.Controls.Add(_equipment);
+        var inventory=MakeButton("MOCHILA",Color.FromArgb(20,24,51),Color.White,20,309,128,34);inventory.Click+=(_,_)=>OpenInventory();side.Controls.Add(inventory);
+        var rest=MakeButton("DESCANSAR",Color.FromArgb(20,24,51),Color.White,158,309,128,34);rest.Click+=(_,_)=>Act(_session.Descansar());side.Controls.Add(rest);
+        var extract=MakeButton("EXTRACCIÓN",Color.FromArgb(20,24,51),Turquesa,20,349,128,34);extract.Click+=(_,_)=>{Act(_session.Extraer());if(_session.MisionCompletada)ShowSystemMessage("Núcleo recuperado y Guardián superado. Recompensa: +100 XP y un módulo desconocido.","Misión completada",MessageBoxButtons.OK,MessageBoxIcon.Information);};side.Controls.Add(extract);
+        var save=MakeButton("GUARDAR",Color.FromArgb(20,24,51),Color.White,158,349,128,34);save.Click+=async(_,_)=>await SaveGame(true);side.Controls.Add(save);
+        var enemyTitle=MakeLabel("OBJETIVO HOSTIL",9,Turquesa,true,20,0,260,20);side.Controls.Add(enemyTitle);
+        _encounterPanel=new Panel{Left=16,Top=0,Width=278,Height=145,BackColor=Color.FromArgb(9,14,31),Anchor=AnchorStyles.Left|AnchorStyles.Right|AnchorStyles.Bottom};side.Controls.Add(_encounterPanel);
+        side.Resize+=(_,_)=>{_encounterPanel.Top=side.ClientSize.Height-153;enemyTitle.Top=side.ClientSize.Height-176;};
         RefreshBoard();
     }
 
