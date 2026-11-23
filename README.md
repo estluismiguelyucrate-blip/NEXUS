@@ -20,6 +20,8 @@ El script restaura las dependencias y abre el juego. También puedes abrir `NEXU
 - Al crear un cazador, mira una cinemática introductoria con la historia del despertar y la aparición de los tres portales. Pulsa **Saltar** o Esc para continuar de inmediato.
 - Recorre los calabozos con movimiento continuo en tiempo real, cámara que sigue al cazador, encuentros con enemigos y escenarios propios para cada mapa.
 - Usa WASD o las flechas para moverte, Shift para impulsarte/esquivar, J o Espacio para atacar y Q para huir de un encuentro.
+- El juego abre en pantalla completa; pulsa **F11** o **Alt+Enter** para cambiar de modo.
+- La banda sonora ambiental original de NEXUS se crea al iniciar y se guarda en `%LOCALAPPDATA%\NEXUS\audio`. Pulsa **M** o el control de música del menú/HUD para silenciarla.
 - Haz clic en el mapa para caminar hasta ese punto.
 - Investiga anomalías, combate al Guardián, reúne objetos y recupera el núcleo.
 - Administra energía, estabilidad, inventario y experiencia; luego vuelve a la extracción.

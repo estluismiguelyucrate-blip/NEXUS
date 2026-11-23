@@ -16,6 +16,8 @@ public sealed partial class MainForm
         header.Controls.Add(MakeLabel("NEXUS",15,Turquesa,true,4,8,84,28));
         header.Controls.Add(MakeLabel("SISTEMA DEL MONARCA",17,Color.White,true,96,2,370,30));
         header.Controls.Add(MakeLabel($"MISIÓN ACTIVA    /    {_session.NombreMapa.ToUpperInvariant()}",9,TextoSuave,false,98,34,520,22));
+        _gameMusicButton=MakeButton(_musicEnabled?"♫ MÚSICA":"♫ SILENCIADA",Color.FromArgb(17,23,48),Color.White,0,12,142,40);
+        _gameMusicButton.Anchor=AnchorStyles.Top|AnchorStyles.Right;_gameMusicButton.Left=ClientSize.Width-366;_gameMusicButton.Click+=(_,_)=>ToggleMusic();header.Controls.Add(_gameMusicButton);
         var back=MakeButton("Ⅱ  PAUSA",Color.FromArgb(17,23,48),Color.White,0,12,142,40);
         back.Anchor=AnchorStyles.Top|AnchorStyles.Right;back.Left=ClientSize.Width-204;back.Click+=(_,_)=>ShowPause();header.Controls.Add(back);
 

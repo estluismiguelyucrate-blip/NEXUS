@@ -1,4 +1,5 @@
 using System.Drawing.Drawing2D;
+using System.Media;
 using Microsoft.Data.SqlClient;
 
 namespace Nexus;
@@ -10,6 +11,14 @@ public sealed partial class MainForm : Form
     private static readonly Color Turquesa = Color.FromArgb(111, 103, 255);
     private static readonly Color TextoSuave = Color.FromArgb(166, 180, 211);
     private Image? _nexusLogo;
+    private SoundPlayer? _musicPlayer;
+    private Button? _menuMusicButton;
+    private Button? _gameMusicButton;
+    private bool _musicEnabled = true;
+    private bool _isFullscreen;
+    private Rectangle _windowedBounds;
+    private Size _windowedMinimumSize;
+    private FormBorderStyle _windowedBorderStyle = FormBorderStyle.Sizable;
     private string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;";
     private bool _sqlAvailable;
     private string LocalSavePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NEXUS", "savegame.json");
@@ -29,7 +38,7 @@ public sealed partial class MainForm : Form
     public MainForm()
     {
         Text = "NEXUS // SISTEMA DEL MONARCA";
-        MinimumSize = new Size(1040, 680);
+        MinimumSize = new Size(1000, 650);
         Size = new Size(1220, 760);
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Fondo;
@@ -39,12 +48,136 @@ public sealed partial class MainForm : Form
         if (File.Exists(logoPath)) _nexusLogo = Image.FromFile(logoPath);
         string iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "nexus.ico");
         if (File.Exists(iconPath)) Icon = new Icon(iconPath);
-        FormClosed += (_, _) => { _nexusLogo?.Dispose(); _autosaveTimer.Dispose(); };
+        try
+        {
+            string musicPath = EnsureOriginalTheme();
+            _musicPlayer = new SoundPlayer(musicPath);
+            _musicPlayer.Load();
+            _musicPlayer.PlayLooping();
+        }
+        catch { _musicPlayer?.Dispose(); _musicPlayer = null; _musicEnabled = false; }
+        FormClosed += (_, _) => { _musicPlayer?.Stop(); _musicPlayer?.Dispose(); _nexusLogo?.Dispose(); _autosaveTimer.Dispose(); };
         _autosaveTimer.Tick += async (_, _) => { _autosaveTimer.Stop(); await SaveGame(false, syncCloud:false); };
         KeyPreview = true;
+        KeyDown += HandleGlobalShortcuts;
         KeyDown += HandleMovementKey;
         KeyUp += HandleMovementKeyUp;
+        Shown += (_, _) => EnterFullscreen();
         ShowMenu();
+    }
+
+    private void HandleGlobalShortcuts(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.F11 || (e.Alt && e.KeyCode == Keys.Enter))
+        {
+            ToggleFullscreen();
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+        }
+        else if (e.KeyCode == Keys.M && ActiveControl is not TextBoxBase && ActiveControl is not ComboBox)
+        {
+            ToggleMusic();
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+        }
+    }
+
+    private void EnterFullscreen()
+    {
+        if (_isFullscreen || !IsHandleCreated) return;
+        _windowedBounds = Bounds;
+        _windowedBorderStyle = FormBorderStyle;
+        _windowedMinimumSize = MinimumSize;
+        WindowState = FormWindowState.Normal;
+        FormBorderStyle = FormBorderStyle.None;
+        MinimumSize = System.Drawing.Size.Empty;
+        Bounds = Screen.FromControl(this).Bounds;
+        _isFullscreen = true;
+    }
+
+    private void ToggleFullscreen()
+    {
+        if (!_isFullscreen) { EnterFullscreen(); return; }
+        _isFullscreen = false;
+        WindowState = FormWindowState.Normal;
+        FormBorderStyle = _windowedBorderStyle;
+        MinimumSize = _windowedMinimumSize;
+        Rectangle area = Screen.FromControl(this).WorkingArea;
+        int width = Math.Min(_windowedBounds.Width, area.Width);
+        int height = Math.Min(_windowedBounds.Height, area.Height);
+        int left = Math.Clamp(_windowedBounds.Left, area.Left, area.Right - width);
+        int top = Math.Clamp(_windowedBounds.Top, area.Top, area.Bottom - height);
+        Bounds = new Rectangle(left, top, width, height);
+    }
+
+    private void ToggleMusic()
+    {
+        if (_musicPlayer is null) return;
+        _musicEnabled = !_musicEnabled;
+        if (_musicEnabled) _musicPlayer.PlayLooping(); else _musicPlayer.Stop();
+        UpdateMusicButtons();
+    }
+
+    private static string EnsureOriginalTheme()
+    {
+        string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NEXUS", "audio");
+        string path = Path.Combine(directory, "nexus-theme.wav");
+        if (File.Exists(path) && new FileInfo(path).Length > 100_000) return path;
+        Directory.CreateDirectory(directory);
+
+        const int sampleRate = 22050;
+        const int secondsPerChord = 8;
+        const int chordCount = 4;
+        const int sampleCount = sampleRate * secondsPerChord * chordCount;
+        var chords = new[]
+        {
+            new[] { 73.42, 110.00, 146.83, 174.61 }, // Dm
+            new[] { 116.54, 174.61, 233.08, 293.66 }, // Bb
+            new[] { 87.31, 130.81, 174.61, 220.00 }, // F
+            new[] { 65.41, 98.00, 130.81, 164.81 } // C
+        };
+        using var stream = File.Create(path);
+        using var writer = new BinaryWriter(stream);
+        int dataBytes = sampleCount * sizeof(short);
+        writer.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+        writer.Write(dataBytes + 36);
+        writer.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));
+        writer.Write(16); writer.Write((short)1); writer.Write((short)1);
+        writer.Write(sampleRate); writer.Write(sampleRate * sizeof(short));
+        writer.Write((short)sizeof(short)); writer.Write((short)16);
+        writer.Write(System.Text.Encoding.ASCII.GetBytes("data")); writer.Write(dataBytes);
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            double time = (double)i / sampleRate;
+            int chordIndex = (int)(time / secondsPerChord);
+            double localTime = time - chordIndex * secondsPerChord;
+            double fade = Math.Min(1, localTime / 1.8) * Math.Min(1, (secondsPerChord - localTime) / 1.8);
+            double phase = 2 * Math.PI * time;
+            double sound = .12 * Math.Sin(phase * chords[chordIndex][0]);
+            sound += .075 * Math.Sin(phase * chords[chordIndex][1]);
+            sound += .055 * Math.Sin(phase * chords[chordIndex][2]);
+            sound += .035 * Math.Sin(phase * chords[chordIndex][3]);
+
+            int noteIndex = (int)(time / 2) % 8;
+            int[] melody = { 0, 2, 3, 2, 1, 2, 3, 2 };
+            double noteTime = time % 2;
+            double pluckEnvelope = Math.Exp(-noteTime * 2.8) * Math.Min(1, noteTime * 18);
+            double melodyFrequency = chords[chordIndex][melody[noteIndex]] * 4;
+            sound += .11 * Math.Sin(phase * melodyFrequency) * pluckEnvelope;
+            sound += .018 * Math.Sin(phase * 440) * (0.5 + 0.5 * Math.Sin(phase * .07));
+
+            short sample = (short)(Math.Clamp(sound * fade, -0.95, 0.95) * short.MaxValue);
+            writer.Write(sample);
+        }
+        return path;
+    }
+
+    private void UpdateMusicButtons()
+    {
+        string text = _musicEnabled ? "♫  MÚSICA: SÍ" : "♫  MÚSICA: NO";
+        if (_menuMusicButton is not null && !_menuMusicButton.IsDisposed) _menuMusicButton.Text = text;
+        if (_gameMusicButton is not null && !_gameMusicButton.IsDisposed) _gameMusicButton.Text = text;
     }
 
     private void ShowMenu()
@@ -119,6 +252,13 @@ public sealed partial class MainForm : Form
 
         var hint = MakeLabel("WASD / FLECHAS  ·  MOVERSE     ESC  ·  PAUSA", 7.5f, Color.FromArgb(190,179,220), false, 25, scene.ClientSize.Height-20, 420, 16);
         hint.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; scene.Controls.Add(hint);
+        _menuMusicButton=MakeButton(_musicEnabled?"♫  MÚSICA: SÍ":"♫  MÚSICA: NO",Color.FromArgb(18,15,38),Color.White,0,0,154,32);
+        _menuMusicButton.Anchor=AnchorStyles.Right|AnchorStyles.Bottom;
+        _menuMusicButton.Left=scene.ClientSize.Width-_menuMusicButton.Width-24;
+        _menuMusicButton.Top=scene.ClientSize.Height-58;
+        _menuMusicButton.Click+=(_,_)=>ToggleMusic();
+        scene.Controls.Add(_menuMusicButton);
+        scene.Resize+=(_,_)=>{_menuMusicButton.Left=scene.ClientSize.Width-_menuMusicButton.Width-24;_menuMusicButton.Top=scene.ClientSize.Height-58;};
     }
 
     private Button MenuButton(string text, int top, bool primary)
@@ -242,8 +382,8 @@ public sealed partial class MainForm : Form
 
     private void PlayAwakeningCinematic(Action onComplete)
     {
-        Rectangle workArea = Screen.FromControl(this).WorkingArea;
-        var sceneSize = new Size(Math.Min(1160, workArea.Width), Math.Min(760, workArea.Height));
+        Rectangle displayBounds = Screen.FromControl(this).Bounds;
+        var sceneSize = displayBounds.Size;
         using var scene = new Form
         {
             Text = "NEXUS // EL DESPERTAR",
@@ -254,7 +394,7 @@ public sealed partial class MainForm : Form
             KeyPreview = true,
             ShowInTaskbar = false
         };
-        scene.Location = new Point(workArea.Left + (workArea.Width - scene.Width) / 2, workArea.Top + (workArea.Height - scene.Height) / 2);
+        scene.Location = displayBounds.Location;
         var canvas = new BufferedPanel { Dock = DockStyle.Fill, BackColor = Fondo };
         scene.Controls.Add(canvas);
         var skip = MakeButton("SALTAR  ›", Color.FromArgb(28,20,51), Color.White, 0, 0, 142, 38);
@@ -383,7 +523,8 @@ public sealed partial class MainForm : Form
             var card = new Rectangle(bounds.Width - 322, bounds.Height / 4, 274, 88);
             g.FillRectangle(objective, card);
             using var edge = new Pen(Color.FromArgb(194, 255, 196, 96), 1.5f); g.DrawRectangle(edge, card);
-            TextRenderer.DrawText(g, "MISIÓN PRINCIPAL\nRecupera el núcleo\nRegresa a extracción", new Font("Bahnschrift", 10, FontStyle.Bold), Rectangle.Inflate(card, -12, -8), Color.FromArgb(240, 255, 228, 190), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+            using var objectiveFont = new Font("Bahnschrift", 10, FontStyle.Bold);
+            TextRenderer.DrawText(g, "MISIÓN PRINCIPAL\nRecupera el núcleo\nRegresa a extracción", objectiveFont, Rectangle.Inflate(card, -12, -8), Color.FromArgb(240, 255, 228, 190), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
         }
 
         using var foreground = new SolidBrush(Color.FromArgb(220, 6, 5, 17));
