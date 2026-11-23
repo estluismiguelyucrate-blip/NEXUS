@@ -8,6 +8,7 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=NEXUS
 AppPublisherURL=https://github.com/estluismiguelyucrate-blip/NEXUS
+SetupIconFile=..\assets\nexus.ico
 DefaultDirName={localappdata}\Programs\NEXUS
 DefaultGroupName=NEXUS
 DisableProgramGroupPage=yes

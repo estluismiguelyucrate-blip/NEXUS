@@ -9,6 +9,7 @@ public sealed partial class MainForm : Form
     private static readonly Color Panel = Color.FromArgb(15, 14, 31);
     private static readonly Color Turquesa = Color.FromArgb(153, 92, 255);
     private static readonly Color TextoSuave = Color.FromArgb(179, 174, 208);
+    private Image? _nexusLogo;
     private string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;";
     private GameSession? _session;
     private string _nombre = "Cadete";
@@ -30,6 +31,11 @@ public sealed partial class MainForm : Form
         BackColor = Fondo;
         ForeColor = Color.White;
         Font = new Font("Bahnschrift", 10F);
+        string logoPath = Path.Combine(AppContext.BaseDirectory, "assets", "nexus-logo.png");
+        if (File.Exists(logoPath)) _nexusLogo = Image.FromFile(logoPath);
+        string iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "nexus.ico");
+        if (File.Exists(iconPath)) Icon = new Icon(iconPath);
+        FormClosed += (_, _) => _nexusLogo?.Dispose();
         KeyPreview = true;
         KeyDown += HandleMovementKey;
         ShowMenu();
@@ -42,14 +48,15 @@ public sealed partial class MainForm : Form
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 69)); root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 31));
         root.RowStyles.Add(new RowStyle(SizeType.Percent,100)); Controls.Add(root);
         var art = new Panel { Dock=DockStyle.Fill, BackColor=Panel, Margin=new Padding(0,8,18,8) }; art.Paint += (_,e) => DrawBackdrop(e.Graphics, art.ClientRectangle); root.Controls.Add(art,0,0);
-        var wordmark=MakeLabel("NEXUS", 42, Color.FromArgb(246,242,255), true, 34, 18, 360, 58); wordmark.Font=new Font("Segoe UI Black",42,FontStyle.Italic); art.Controls.Add(wordmark);
-        art.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 10, Color.FromArgb(224,211,255), true, 43, 78, 360, 22));
-        art.Controls.Add(MakeLabel("EL UMBRAL\nTE ESTÁ\nLLAMANDO", 30, Color.White, true, 38, 139, 410, 137));
-        art.Controls.Add(MakeLabel("Una señal rompe el silencio de H3.\nEn las ruinas, algo despertó.", 12, Color.FromArgb(229,225,248), false, 42, 294, 370, 52));
-        art.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(190,153,92,255),1);e.Graphics.DrawLine(pen,40,376,285,376);e.Graphics.DrawLine(pen,40,376,40,400);};
-        art.Controls.Add(MakeLabel("MISIÓN PRINCIPAL     /     SECTOR H3", 9, Color.FromArgb(196,159,255), true, 42, 390, 320, 22));
-        art.Controls.Add(MakeLabel("RECUPERA EL NÚCLEO Y SOBREVIVE", 9, Color.FromArgb(241,235,255), true, 42, 421, 330, 22));
-        art.Controls.Add(MakeLabel("Explora las ruinas. Vence al Guardián.\nRegresa a la baliza de extracción.", 11, TextoSuave, false, 42, 450, 360, 46));
+        if (_nexusLogo is not null)
+            art.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=24, Top=0, Width=270, Height=180 });
+        art.Controls.Add(MakeLabel("EXPLORA   ·   MEJORA   ·   SOBREVIVE", 9, Color.FromArgb(224,211,255), true, 42, 170, 340, 20));
+        art.Controls.Add(MakeLabel("EL UMBRAL\nTE ESTÁ LLAMANDO", 29, Color.White, true, 38, 203, 440, 91));
+        art.Controls.Add(MakeLabel("Una señal rompe el silencio de H3.\nEn las ruinas, algo despertó.", 12, Color.FromArgb(229,225,248), false, 42, 310, 370, 48));
+        art.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(190,153,92,255),1);e.Graphics.DrawLine(pen,40,382,285,382);e.Graphics.DrawLine(pen,40,382,40,406);};
+        art.Controls.Add(MakeLabel("MISIÓN PRINCIPAL     /     SECTOR H3", 9, Color.FromArgb(196,159,255), true, 42, 414, 320, 22));
+        art.Controls.Add(MakeLabel("RECUPERA EL NÚCLEO Y SOBREVIVE", 9, Color.FromArgb(241,235,255), true, 42, 443, 330, 22));
+        art.Controls.Add(MakeLabel("Explora las ruinas. Vence al Guardián.\nRegresa a la baliza de extracción.", 11, TextoSuave, false, 42, 472, 360, 46));
         var right = new Panel { Dock=DockStyle.Fill, BackColor=Fondo, Padding=new Padding(3,54,4,24) }; root.Controls.Add(right,1,0);
         right.Controls.Add(MakeLabel("CAZADOR DEL\nUMBRAL", 21, Color.White, true, 12, 6, 280, 61));
         right.Controls.Add(MakeLabel("◆  MISIÓN PRINCIPAL  ·  H3", 9, Color.FromArgb(196,159,255), true, 15, 79, 260, 26));
@@ -188,4 +195,3 @@ public sealed partial class MainForm : Form
         using(var tint=new LinearGradientBrush(bounds,Color.FromArgb(8,8,12,12),Color.FromArgb(70,8,12,13),LinearGradientMode.Vertical))g.FillRectangle(tint,bounds);
     }
 }
-
