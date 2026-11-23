@@ -65,10 +65,10 @@ public sealed partial class MainForm : Form
         menu.Controls.Add(MakeLabel("Tres portales han aparecido.\nEntra al calabozo y reclama tu poder.", 9.5f, TextoSuave, false, 10, 315, 295, 42));
 
         var play = MenuButton("▶   INICIAR JUEGO", 365, true); play.Click += (_,_) => NewCadet(); menu.Controls.Add(play);
-        var cont = MenuButton("↻   CONTINUAR PARTIDA", 420, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
-        var settings = MenuButton("⚙   CONFIGURACIÓN", 475, false); settings.Click += (_,_) => ConnectionSettings(); menu.Controls.Add(settings);
-        var info = MenuButton("ⓘ   INFORMACIÓN", 530, false); info.Click += (_,_) => ShowInformation(); menu.Controls.Add(info);
-        var exit = MenuButton("↪   SALIR", 585, false); exit.Click += (_,_) => Close(); menu.Controls.Add(exit);
+        var cont = MenuButton("↻   CONTINUAR PARTIDA", 409, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
+        var settings = MenuButton("⚙   CONFIGURACIÓN", 453, false); settings.Click += (_,_) => ConnectionSettings(); menu.Controls.Add(settings);
+        var info = MenuButton("ⓘ   INFORMACIÓN", 497, false); info.Click += (_,_) => ShowInformation(); menu.Controls.Add(info);
+        var exit = MenuButton("↪   SALIR", 541, false); exit.Click += (_,_) => Close(); menu.Controls.Add(exit);
 
         _status = MakeLabel("●  SISTEMA EN LÍNEA  ·  SQL SIN VERIFICAR", 8, Color.FromArgb(157,147,186), false, 9, menu.Height-52, 300, 20);
         _status.Anchor=AnchorStyles.Left|AnchorStyles.Bottom; menu.Controls.Add(_status);
@@ -101,9 +101,15 @@ public sealed partial class MainForm : Form
         var mission = MenuCard(scene, 22, 0, 340, 126);
         mission.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
         mission.Top=scene.ClientSize.Height-153;
-        mission.Controls.Add(MakeLabel("PORTAL DE RANGO ?", 13, Color.White, true, 16, 13, 300, 24));
-        mission.Controls.Add(MakeLabel("CALABOZO ACTIVO   ·   SECTOR 01", 8.5f, Color.FromArgb(210,199,232), false, 16, 42, 300, 19));
-        mission.Controls.Add(MakeLabel("Derrota al jefe. Recupera el núcleo.\nRegresa con vida.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
+        mission.Controls.Add(MakeLabel("PORTAL DE RANGO E", 12, Color.White, true, 16, 10, 300, 22));
+        mission.Controls.Add(MakeLabel("CALABOZO ACTIVO   ·   SECTOR 01", 8, Color.FromArgb(210,199,232), false, 16, 34, 300, 17));
+        mission.Controls.Add(MakeLabel("Elige una zona y comienza la incursión.", 8.5f, TextoSuave, false, 16, 53, 302, 19));
+        var enterPortal = MakeButton("ELEGIR PORTAL   ›", Color.FromArgb(104,58,213), Color.White, 15, 79, 288, 34);
+        enterPortal.FlatAppearance.BorderColor = Color.FromArgb(194,151,255);
+        enterPortal.FlatAppearance.BorderSize = 1;
+        enterPortal.FlatAppearance.MouseOverBackColor = Color.FromArgb(138,83,242);
+        enterPortal.Click += (_,_) => NewCadet();
+        mission.Controls.Add(enterPortal);
         scene.Resize += (_,_) => { caption.Top=scene.ClientSize.Height-177; mission.Top=scene.ClientSize.Height-153; quest.Left=Math.Max(24,scene.ClientSize.Width-296); };
 
         var hint = MakeLabel("WASD / FLECHAS  ·  MOVERSE     ESC  ·  PAUSA", 7.5f, Color.FromArgb(190,179,220), false, 25, scene.ClientSize.Height-20, 420, 16);
@@ -112,7 +118,7 @@ public sealed partial class MainForm : Form
 
     private Button MenuButton(string text, int top, bool primary)
     {
-        var button=MakeButton(text, primary?Color.FromArgb(112,65,222):Color.FromArgb(19,16,38), Color.White, 4, top, 280, 43);
+        var button=MakeButton(text, primary?Color.FromArgb(112,65,222):Color.FromArgb(19,16,38), Color.White, 4, top, 280, 38);
         button.Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right;
         button.TextAlign=ContentAlignment.MiddleLeft;
         button.Padding=new Padding(17,0,0,0);
@@ -226,7 +232,80 @@ public sealed partial class MainForm : Form
         dlg.Controls.Add(MakeLabel("Territorio",10,Color.White,false,35,176,120,20)); dlg.Controls.Add(map);
         var start=MakeButton("ACEPTAR Y DESPERTAR",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){ShowSystemMessage(ex.Message,"Datos del cazador",owner:dlg);}}; dlg.Controls.Add(start);
         dlg.Controls.Add(MakeLabel("Cada portal conserva su propio mapa y progreso.",8.5f,TextoSuave,false,35,318,340,22));
-        if(dlg.ShowDialog(this)==DialogResult.OK) ShowGame();
+        if(dlg.ShowDialog(this)==DialogResult.OK) PlayAwakeningCinematic(ShowGame);
+    }
+
+    private void PlayAwakeningCinematic(Action onComplete)
+    {
+        using var scene = new Form
+        {
+            Text = "NEXUS // EL DESPERTAR",
+            FormBorderStyle = FormBorderStyle.None,
+            StartPosition = FormStartPosition.CenterParent,
+            ClientSize = new Size(1040, 600),
+            BackColor = Fondo,
+            KeyPreview = true,
+            ShowInTaskbar = false
+        };
+        var canvas = new Panel { Dock = DockStyle.Fill, BackColor = Fondo };
+        scene.Controls.Add(canvas);
+        var skip = MakeButton("SALTAR  ›", Color.FromArgb(28,20,51), Color.White, 0, 0, 142, 38);
+        skip.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+        skip.Left = scene.ClientSize.Width - skip.Width - 28;
+        skip.Top = scene.ClientSize.Height - skip.Height - 22;
+        scene.Resize += (_, _) => { skip.Left = scene.ClientSize.Width - skip.Width - 28; skip.Top = scene.ClientSize.Height - skip.Height - 22; };
+        scene.Controls.Add(skip);
+
+        string[] titles = { "LA NOCHE EN QUE TODO CAMBIÓ", "EL DESPERTAR", "TRES PORTALES", "TU PRIMERA INCURSIÓN" };
+        string[] lines =
+        {
+            "Una grieta violeta rasgó el cielo. Algo cruzó desde el otro lado.",
+            "Herido y sin fuerzas, escuchaste una voz: el Sistema te eligió.",
+            "Las Ruinas del Umbral, el Bosque Carmesí y la Ciudad Sumergida quedaron conectados.",
+            "Sobrevive, derrota al Guardián y recupera el núcleo para cerrar la brecha."
+        };
+        var clock = new System.Windows.Forms.Timer { Interval = 40 };
+        double elapsed = 0;
+        bool finished = false;
+        void Finish()
+        {
+            if (finished) return;
+            finished = true;
+            clock.Stop();
+            scene.DialogResult = DialogResult.OK;
+            scene.Close();
+        }
+        skip.Click += (_, _) => Finish();
+        scene.KeyDown += (_, e) => { if (e.KeyCode == Keys.Escape || e.KeyCode == Keys.Space || e.KeyCode == Keys.Enter) Finish(); };
+        canvas.Paint += (_, e) =>
+        {
+            var g = e.Graphics;
+            DrawMenuBackdrop(g, canvas.ClientRectangle);
+            float beat = (float)(.5 + .5 * Math.Sin(elapsed * 2.4));
+            int halo = (int)(130 + beat * 55);
+            using (var glow = new SolidBrush(Color.FromArgb(30 + (int)(beat * 24), 146, 74, 255)))
+                g.FillEllipse(glow, canvas.Width / 2 - halo, canvas.Height / 2 - halo, halo * 2, halo * 2);
+            using (var veil = new SolidBrush(Color.FromArgb(108, 3, 3, 12))) g.FillRectangle(veil, canvas.ClientRectangle);
+            int phase = Math.Min(3, (int)(elapsed / 4.25));
+            float phaseTime = (float)(elapsed % 4.25);
+            int alpha = Math.Clamp((int)(Math.Min(1, Math.Min(phaseTime / .55, (4.25 - phaseTime) / .55)) * 255), 0, 255);
+            using var titleFont = new Font("Bahnschrift", 23, FontStyle.Bold);
+            using var bodyFont = new Font("Bahnschrift", 13, FontStyle.Regular);
+            using var titleBrush = new SolidBrush(Color.FromArgb(alpha, 235, 222, 255));
+            using var bodyBrush = new SolidBrush(Color.FromArgb(alpha, 220, 216, 235));
+            var titleRect = new RectangleF(80, canvas.Height - 185, canvas.Width - 160, 42);
+            var bodyRect = new RectangleF(120, canvas.Height - 132, canvas.Width - 240, 58);
+            using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+            g.DrawString(titles[phase], titleFont, titleBrush, titleRect, format);
+            g.DrawString(lines[phase], bodyFont, bodyBrush, bodyRect, format);
+            using var rule = new Pen(Color.FromArgb(alpha, 153, 92, 255), 2);
+            g.DrawLine(rule, canvas.Width / 2 - 140, (int)titleRect.Bottom + 3, canvas.Width / 2 + 140, (int)titleRect.Bottom + 3);
+        };
+        clock.Tick += (_, _) => { elapsed += clock.Interval / 1000d; canvas.Invalidate(); if (elapsed >= 17) Finish(); };
+        scene.Shown += (_, _) => clock.Start();
+        scene.FormClosed += (_, _) => clock.Dispose();
+        scene.ShowDialog(this);
+        onComplete();
     }
 
     private async Task TestSql(IWin32Window? owner = null)
