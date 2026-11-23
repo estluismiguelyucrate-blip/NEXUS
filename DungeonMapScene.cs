@@ -1,4 +1,5 @@
 using System.Drawing.Drawing2D;
+using System.Diagnostics;
 
 namespace Nexus;
 
@@ -9,23 +10,59 @@ public sealed class DungeonMapScene : Control
     private static readonly Color Blue = Color.FromArgb(91, 160, 255);
     private GameSession? _session;
     private Action<int, int>? _move;
-    private (int Row, int Column)? _hovered;
+    private Action<string>? _action;
+    private readonly HashSet<Keys> _keys = new();
+    private readonly System.Windows.Forms.Timer _timer = new() { Interval = 16 };
+    private readonly Stopwatch _clock = Stopwatch.StartNew();
+    private Bitmap? _terrainCache;
+    private PointF _player;
+    private PointF _enemyPosition;
+    private float _facing = 1;
+    private float _walkPhase;
+    private float _attackFlash;
+    private float _dashCooldown;
+    private float _enemyAttackCooldown = 1.1f;
+    private int _lastZoneRow = -1, _lastZoneColumn = -1;
 
     public DungeonMapScene()
     {
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
         BackColor = Color.FromArgb(5, 7, 18);
         Cursor = Cursors.Hand;
+        TabStop = true;
+        _timer.Tick += (_, _) => Step();
+        _timer.Start();
+        VisibleChanged += (_, _) => { if (Visible) _timer.Start(); else _timer.Stop(); };
+        Disposed += (_, _) => { _timer.Dispose(); _terrainCache?.Dispose(); };
     }
 
-    public void Bind(GameSession session, Action<int, int> move)
+    public void Bind(GameSession session, Action<int, int> move, Action<string> action)
     {
         _session = session;
         _move = move;
+        _action = action;
+        RebuildTerrainCache();
+        _lastZoneRow = session.Mapa.Fila;
+        _lastZoneColumn = session.Mapa.Columna;
+        _player = Center(_lastZoneRow, _lastZoneColumn);
+        _enemyPosition = _player;
+        Focus();
         Invalidate();
     }
 
     public void RefreshScene() => Invalidate();
+
+    public void SetKey(Keys key, bool pressed)
+    {
+        if (pressed)
+        {
+            if (!_keys.Add(key)) return;
+            if (key is Keys.Space or Keys.J) Attack();
+            if (key == Keys.Q && _session?.EnemigoActual is not null) _action?.Invoke(_session.Escapar());
+            if (key == Keys.ShiftKey && _dashCooldown <= 0) _dashCooldown = .55f;
+        }
+        else _keys.Remove(key);
+    }
 
     protected override void OnPaint(PaintEventArgs e)
     {
@@ -37,69 +74,224 @@ public sealed class DungeonMapScene : Control
 
         DrawBackdrop(g);
         if (_session is null) return;
-
+        PointF camera = Camera();
+        GraphicsState state = g.Save();
+        g.TranslateTransform(-camera.X, -camera.Y);
+        if (_terrainCache is not null) g.DrawImageUnscaled(_terrainCache, 0, 0);
         for (int row = 0; row < _session.Mapa.Filas; row++)
             for (int column = 0; column < _session.Mapa.Columnas; column++)
                 DrawZone(g, row, column);
-
+        DrawPlayer(g);
+        if (_session.EnemigoActual is not null) DrawEnemy(g, _enemyPosition);
+        g.Restore(state);
         DrawHoverReadout(g);
     }
 
     protected override void OnMouseMove(MouseEventArgs e)
     {
         base.OnMouseMove(e);
-        var next = HitTest(e.Location);
-        if (next == _hovered) return;
-        _hovered = next;
-        Cursor = next.HasValue ? Cursors.Hand : Cursors.Default;
-        Invalidate();
+        Cursor = Cursors.Cross;
     }
 
     protected override void OnMouseLeave(EventArgs e)
     {
         base.OnMouseLeave(e);
-        _hovered = null;
         Cursor = Cursors.Default;
-        Invalidate();
     }
 
     protected override void OnMouseClick(MouseEventArgs e)
     {
         base.OnMouseClick(e);
-        if (e.Button != MouseButtons.Left) return;
-        var zone = HitTest(e.Location);
-        if (zone.HasValue) _move?.Invoke(zone.Value.Row, zone.Value.Column);
+        Focus();
     }
 
     private PointF Center(int row, int column)
     {
-        // A hand-composed route keeps the logical 4 × 5 map, while the art
-        // reads as scattered ledges in a dungeon instead of a board.
-        float[,] layout =
-        {
-            { .08f,.19f, .25f,.08f, .43f,.18f, .67f,.08f, .88f,.22f },
-            { .73f,.40f, .57f,.37f, .38f,.43f, .22f,.36f, .07f,.54f },
-            { .18f,.67f, .36f,.63f, .56f,.70f, .79f,.62f, .92f,.76f },
-            { .72f,.89f, .52f,.85f, .31f,.91f, .12f,.83f, .46f,.98f }
-        };
-        float usableHeight = Math.Max(100, Height - 35);
-        return new PointF(18 + layout[row, column * 2] * Math.Max(80, Width - 36), 8 + layout[row, column * 2 + 1] * usableHeight);
+        const float roomWidth = 280, roomHeight = 220;
+        return new PointF(column * roomWidth + roomWidth / 2, row * roomHeight + roomHeight / 2);
     }
 
-    private (int Row, int Column)? HitTest(Point point)
+    private void Step()
     {
-        if (_session is null) return null;
-        for (int row = 0; row < _session.Mapa.Filas; row++)
-            for (int column = 0; column < _session.Mapa.Columnas; column++)
+        if (_session is null || IsDisposed) return;
+        float delta = Math.Clamp((float)_clock.Elapsed.TotalSeconds, .001f, .05f);
+        _clock.Restart();
+        _attackFlash = Math.Max(0, _attackFlash - delta);
+        _dashCooldown = Math.Max(0, _dashCooldown - delta);
+        if (_session.EnemigoActual is not null) UpdateEnemy(delta);
+
+        float dx = Axis(Keys.A, Keys.Left, Keys.D, Keys.Right);
+        float dy = Axis(Keys.W, Keys.Up, Keys.S, Keys.Down);
+        if (dx == 0 && dy == 0) { Invalidate(); return; }
+        if (dx != 0 && dy != 0) { dx *= .7071f; dy *= .7071f; }
+        if (dx != 0) _facing = dx;
+        float speed = _dashCooldown > .30f ? 570 : 245;
+        _walkPhase += delta * speed / 18f;
+
+        MoveAxis(dx * speed * delta, 0);
+        MoveAxis(0, dy * speed * delta);
+        Invalidate();
+    }
+
+    private float Axis(Keys negA, Keys negB, Keys posA, Keys posB) =>
+        (_keys.Contains(negA) || _keys.Contains(negB) ? -1 : 0) + (_keys.Contains(posA) || _keys.Contains(posB) ? 1 : 0);
+
+    private void MoveAxis(float dx, float dy)
+    {
+        if (_session is null) return;
+        const float roomWidth = 280, roomHeight = 220;
+        float nx = Math.Clamp(_player.X + dx, 12, _session.Mapa.Columnas * roomWidth - 12);
+        float ny = Math.Clamp(_player.Y + dy, 12, _session.Mapa.Filas * roomHeight - 12);
+        int column = Math.Clamp((int)(nx / roomWidth), 0, _session.Mapa.Columnas - 1);
+        int row = Math.Clamp((int)(ny / roomHeight), 0, _session.Mapa.Filas - 1);
+        if (row != _lastZoneRow || column != _lastZoneColumn)
+        {
+            // Cross one doorway at a time; diagonals cannot skip a room.
+            if (Math.Abs(row - _lastZoneRow) + Math.Abs(column - _lastZoneColumn) != 1)
             {
-                PointF center = Center(row, column);
-                bool visible = _session.Mapa.FueVisitada(row, column) || IsAdjacentToCurrent(row, column);
-                if (!visible) continue;
-                float dx = (point.X - center.X) / 40f;
-                float dy = (point.Y - center.Y) / 30f;
-                if (dx * dx + dy * dy <= 1f) return (row, column);
+                if (dx != 0) nx = _player.X; else ny = _player.Y;
+                column = Math.Clamp((int)(nx / roomWidth), 0, _session.Mapa.Columnas - 1);
+                row = Math.Clamp((int)(ny / roomHeight), 0, _session.Mapa.Filas - 1);
             }
-        return null;
+            if (row != _lastZoneRow || column != _lastZoneColumn)
+            {
+                _move?.Invoke(row, column);
+                if (_session.Mapa.Fila == row && _session.Mapa.Columna == column)
+                {
+                    _lastZoneRow = row; _lastZoneColumn = column;
+                    _enemyPosition = Center(row, column);
+                    _enemyAttackCooldown = 1.1f;
+                }
+                else
+                {
+                    if (dx != 0) nx = dx > 0 ? (_lastZoneColumn + 1) * roomWidth - 13 : _lastZoneColumn * roomWidth + 13;
+                    if (dy != 0) ny = dy > 0 ? (_lastZoneRow + 1) * roomHeight - 13 : _lastZoneRow * roomHeight + 13;
+                }
+            }
+        }
+        _player = new PointF(nx, ny);
+    }
+
+    private void Attack()
+    {
+        if (_session?.EnemigoActual is null || _attackFlash > 0) return;
+        _attackFlash = .3f;
+        _action?.Invoke(_session.AtacarEnTiempoReal());
+        if (_session.EnemigoActual is null) _enemyAttackCooldown = 0;
+    }
+
+    private void UpdateEnemy(float delta)
+    {
+        if (_session?.EnemigoActual is null || _session.EnemigoActual is Robot) return;
+        float dx = _player.X - _enemyPosition.X, dy = _player.Y - _enemyPosition.Y;
+        float distance = MathF.Sqrt(dx * dx + dy * dy);
+        if (distance > 45)
+        {
+            float step = Math.Min(distance - 44, 105 * delta);
+            _enemyPosition.X += dx / distance * step;
+            _enemyPosition.Y += dy / distance * step;
+            return;
+        }
+        _enemyAttackCooldown -= delta;
+        if (_enemyAttackCooldown > 0) return;
+        _enemyAttackCooldown = 1.25f;
+        string result = _dashCooldown > 0 ? "Esquivaste el golpe del enemigo." : _session.RecibirAtaqueEnTiempoReal();
+        if (!string.IsNullOrWhiteSpace(result)) _action?.Invoke(result);
+    }
+
+    private PointF Camera()
+    {
+        float worldWidth = _session!.Mapa.Columnas * 280, worldHeight = _session.Mapa.Filas * 220;
+        return new PointF(Math.Clamp(_player.X - Width / 2f, 0, Math.Max(0, worldWidth - Width)),
+            Math.Clamp(_player.Y - Height / 2f, 0, Math.Max(0, worldHeight - Height)));
+    }
+
+    private void DrawTerrain(Graphics g)
+    {
+        if (_session is null) return;
+        const int roomWidth = 280, roomHeight = 220;
+        int width = roomWidth * _session.Mapa.Columnas, height = roomHeight * _session.Mapa.Filas;
+        Color tint = _session.MapaId switch
+        {
+            1 => Color.FromArgb(24, 64, 35),
+            2 => Color.FromArgb(16, 47, 72),
+            _ => Color.FromArgb(29, 24, 62)
+        };
+        using var floor = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.FromArgb(26, tint), Color.FromArgb(4, 5, 16), LinearGradientMode.Vertical);
+        g.FillRectangle(floor, 0, 0, width, height);
+        var random = new Random(931 + _session.MapaId * 91);
+        using var stone = new SolidBrush(Color.FromArgb(82, 24, 23, 47));
+        using var glint = new SolidBrush(Color.FromArgb(37, 161, 124, 248));
+        for (int i = 0; i < 420; i++)
+        {
+            int x = random.Next(width), y = random.Next(height), s = random.Next(3, 13);
+            g.FillEllipse(stone, x, y, s, s / 2f);
+            if (i % 6 == 0) g.FillEllipse(glint, x + 2, y + 2, 2, 2);
+        }
+        for (int row = 0; row < _session.Mapa.Filas; row++)
+            for (int col = 0; col < _session.Mapa.Columnas; col++)
+            {
+                PointF c = Center(row, col);
+                if (_session.MapaId == 1) DrawTree(g, c.X + ((row + col) % 2 == 0 ? -92 : 94), c.Y - 38);
+                else if (_session.MapaId == 2) DrawTemple(g, c.X + 94, c.Y - 25);
+                else DrawRuin(g, c.X - 94, c.Y - 28);
+            }
+    }
+
+    private void RebuildTerrainCache()
+    {
+        if (_session is null) return;
+        _terrainCache?.Dispose();
+        _terrainCache = new Bitmap(_session.Mapa.Columnas * 280, _session.Mapa.Filas * 220);
+        using Graphics terrain = Graphics.FromImage(_terrainCache);
+        terrain.SmoothingMode = SmoothingMode.AntiAlias;
+        DrawTerrain(terrain);
+    }
+
+    private static void DrawRuin(Graphics g, float x, float y)
+    {
+        using var ruin = new SolidBrush(Color.FromArgb(150, 13, 12, 31));
+        g.FillPolygon(ruin, new[] { new PointF(x - 26, y + 27), new PointF(x - 19, y - 16), new PointF(x - 10, y - 23), new PointF(x - 2, y - 12), new PointF(x + 1, y + 25) });
+        g.FillPolygon(ruin, new[] { new PointF(x + 4, y + 25), new PointF(x + 7, y - 7), new PointF(x + 17, y - 21), new PointF(x + 25, y - 6), new PointF(x + 29, y + 27) });
+    }
+
+    private static void DrawTree(Graphics g, float x, float y)
+    {
+        using var trunk = new SolidBrush(Color.FromArgb(180, 28, 17, 31));
+        using var crown = new SolidBrush(Color.FromArgb(185, 23, 49, 44));
+        g.FillRectangle(trunk, x - 3, y - 4, 6, 24);
+        g.FillEllipse(crown, x - 19, y - 31, 38, 39);
+        using var leaf = new Pen(Color.FromArgb(78, 135, 64, 91), 1.4f);
+        g.DrawArc(leaf, x - 16, y - 28, 30, 28, 20, 120);
+    }
+
+    private static void DrawTemple(Graphics g, float x, float y)
+    {
+        using var stone = new SolidBrush(Color.FromArgb(150, 12, 24, 41));
+        g.FillRectangle(stone, x - 22, y - 10, 8, 39); g.FillRectangle(stone, x + 14, y - 10, 8, 39);
+        g.FillPolygon(stone, new[] { new PointF(x - 28, y - 10), new PointF(x, y - 32), new PointF(x + 28, y - 10) });
+        using var water = new Pen(Color.FromArgb(69, 74, 160, 220), 1.3f);
+        g.DrawArc(water, x - 38, y + 25, 76, 17, 0, 180);
+    }
+
+    private void DrawPlayer(Graphics g)
+    {
+        PointF p = _player;
+        bool moving = _keys.Any(k => k is Keys.W or Keys.A or Keys.S or Keys.D or Keys.Up or Keys.Down or Keys.Left or Keys.Right);
+        float bob = moving ? MathF.Sin(_walkPhase) * 2.4f : 0;
+        using var shadow = new SolidBrush(Color.FromArgb(110, 0, 0, 8));
+        g.FillEllipse(shadow, p.X - 15, p.Y + 10, 30, 11);
+        using var aura = new SolidBrush(Color.FromArgb(75, 138, 91, 255));
+        g.FillEllipse(aura, p.X - 20, p.Y - 24 + bob, 40, 41);
+        using var cloak = new SolidBrush(Color.FromArgb(248, 8, 9, 25));
+        g.FillEllipse(cloak, p.X - 6, p.Y - 24 + bob, 12, 12);
+        g.FillPolygon(cloak, new[] { new PointF(p.X - 8, p.Y - 13 + bob), new PointF(p.X + 8, p.Y - 13 + bob), new PointF(p.X + 13, p.Y + 7 + bob), new PointF(p.X, p.Y + 13 + bob), new PointF(p.X - 13, p.Y + 7 + bob) });
+        float swing = _attackFlash > 0 ? (float)Math.Sin((_attackFlash / .3) * Math.PI) * 21 : 0;
+        using var bladeGlow = new Pen(Color.FromArgb(70, Violet), 7f);
+        using var blade = new Pen(Color.FromArgb(230, 211, 190, 255), 2.2f);
+        float handX = p.X + _facing * 7, handY = p.Y - 2 + bob;
+        g.DrawLine(bladeGlow, handX, handY, handX + _facing * (17 + swing), handY - 15 - swing * .4f);
+        g.DrawLine(blade, handX, handY, handX + _facing * (17 + swing), handY - 15 - swing * .4f);
     }
 
     private void DrawBackdrop(Graphics g)
@@ -189,7 +381,6 @@ public sealed class DungeonMapScene : Control
         bool visited = _session.Mapa.FueVisitada(row, column);
         bool adjacent = IsAdjacentToCurrent(row, column);
         if (!visited && !adjacent) return;
-        bool hovered = _hovered is { } cell && cell.Row == row && cell.Column == column;
         TipoCelda type = _session.Mapa.TipoEn(row, column);
 
         if (current)
@@ -217,7 +408,7 @@ public sealed class DungeonMapScene : Control
         };
         using (var surface = new LinearGradientBrush(ZoneBounds(center), ControlPaint.Light(topColor, .15f), topColor, LinearGradientMode.Vertical))
             g.FillPolygon(surface, island);
-        using (var rim = new Pen(current ? Color.FromArgb(238, 199, 161, 255) : hovered ? Color.FromArgb(210, 116, 194, 255) : Color.FromArgb(visited ? 130 : 53, 119, 104, 189), current ? 2.5f : 1.3f))
+        using (var rim = new Pen(current ? Color.FromArgb(238, 199, 161, 255) : Color.FromArgb(visited ? 130 : 53, 119, 104, 189), current ? 2.5f : 1.3f))
             g.DrawPolygon(rim, island);
 
         DrawRockEdges(g, center, visited || current);
@@ -334,15 +525,31 @@ public sealed class DungeonMapScene : Control
         g.DrawEllipse(aura, c.X - 28, c.Y - 27, 56, 51);
     }
 
+    private void DrawEnemy(Graphics g, PointF c)
+    {
+        using var aura = new SolidBrush(Color.FromArgb(83, 185, 40, 221));
+        g.FillEllipse(aura, c.X - 27, c.Y - 31, 54, 56);
+        using var shadow = new SolidBrush(Color.FromArgb(245, 10, 5, 23));
+        g.FillEllipse(shadow, c.X - 12, c.Y - 28, 24, 23);
+        g.FillPolygon(shadow, new[] { new PointF(c.X - 20, c.Y - 9), new PointF(c.X + 20, c.Y - 9), new PointF(c.X + 25, c.Y + 21), new PointF(c.X, c.Y + 12), new PointF(c.X - 25, c.Y + 21) });
+        using var eyes = new Pen(Color.FromArgb(244, 255, 75, 200), 2.8f);
+        g.DrawLine(eyes, c.X - 8, c.Y - 17, c.X - 3, c.Y - 15);
+        g.DrawLine(eyes, c.X + 3, c.Y - 15, c.X + 8, c.Y - 17);
+        var enemy = _session?.EnemigoActual;
+        if (enemy is null) return;
+        RectangleF bar = new(c.X - 31, c.Y - 43, 62, 5);
+        using var back = new SolidBrush(Color.FromArgb(190, 31, 13, 42)); g.FillRectangle(back, bar);
+        using var fill = new SolidBrush(Color.FromArgb(232, 235, 55, 197));
+        g.FillRectangle(fill, bar.X, bar.Y, bar.Width * Math.Clamp(enemy.Energia, 0, enemy.EnergiaMax) / Math.Max(1, enemy.EnergiaMax), bar.Height);
+    }
+
     private void DrawHoverReadout(Graphics g)
     {
-        if (_session is null || !_hovered.HasValue) return;
-        var cell = _hovered.Value;
-        bool visited = _session.Mapa.FueVisitada(cell.Row, cell.Column);
-        string text = visited ? $"ZONA {cell.Row + 1}:{cell.Column + 1}" : "ZONA SIN EXPLORAR";
+        if (_session is null) return;
+        string text = _session.EnemigoActual is not null ? "J / ESPACIO ATACAR   ·   SHIFT ESQUIVAR   ·   Q ESCAPAR" : "WASD MOVERSE   ·   SHIFT IMPULSO   ·   ENTRA AL PORTAL";
         using var background = new SolidBrush(Color.FromArgb(215, 7, 10, 28));
         using var edge = new Pen(Color.FromArgb(125, Violet));
-        var rectangle = new Rectangle(13, 12, 175, 25);
+        var rectangle = new Rectangle(13, 12, 310, 25);
         g.FillRectangle(background, rectangle);
         g.DrawRectangle(edge, rectangle);
         using var font = new Font("Bahnschrift", 8.5f, FontStyle.Bold);
