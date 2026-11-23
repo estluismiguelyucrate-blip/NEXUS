@@ -46,7 +46,7 @@ public sealed partial class MainForm
         _equipment=MakeLabel("",9,Color.FromArgb(208,199,230),false,20,302,286,56);side.Controls.Add(_equipment);
         var inventory=MakeButton("MOCHILA",Color.FromArgb(20,24,51),Color.White,20,363,128,36);inventory.Click+=(_,_)=>OpenInventory();side.Controls.Add(inventory);
         var rest=MakeButton("DESCANSAR",Color.FromArgb(20,24,51),Color.White,158,363,128,36);rest.Click+=(_,_)=>Act(_session.Descansar());side.Controls.Add(rest);
-        var extract=MakeButton("EXTRACCIÓN",Color.FromArgb(20,24,51),Turquesa,20,407,128,36);extract.Click+=(_,_)=>{Act(_session.Extraer());if(_session.MisionCompletada)MessageBox.Show(this,"La misión se completó. +100 XP y un módulo desconocido.","Extracción",MessageBoxButtons.OK,MessageBoxIcon.Information);};side.Controls.Add(extract);
+        var extract=MakeButton("EXTRACCIÓN",Color.FromArgb(20,24,51),Turquesa,20,407,128,36);extract.Click+=(_,_)=>{Act(_session.Extraer());if(_session.MisionCompletada)ShowSystemMessage("Núcleo recuperado y Guardián superado. Recompensa: +100 XP y un módulo desconocido.","Misión completada",MessageBoxButtons.OK,MessageBoxIcon.Information);};side.Controls.Add(extract);
         var save=MakeButton("GUARDAR",Color.FromArgb(20,24,51),Color.White,158,407,128,36);save.Click+=async(_,_)=>await SaveGame(true);side.Controls.Add(save);
         side.Controls.Add(MakeLabel("OBJETIVO HOSTIL",9,Turquesa,true,20,455,260,20));
         _encounterPanel=new Panel{Left=16,Top=478,Width=278,Height=156,BackColor=Color.FromArgb(9,14,31)};side.Controls.Add(_encounterPanel);
@@ -99,7 +99,7 @@ public sealed partial class MainForm
     private void Act(string message)
     {
         if(_log is not null)_log.Text=message;
-        if(_session?.Derrotado==true&&!_failureReported){_failureReported=true;MessageBox.Show(this,"La energía o estabilidad llegó a cero. La misión ha fallado.","Misión fallida",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+        if(_session?.Derrotado==true&&!_failureReported){_failureReported=true;ShowSystemMessage("La energía o estabilidad llegó a cero. La incursión terminó. Recupera fuerzas y vuelve a intentarlo.","Cazador derrotado",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
         RefreshBoard();
     }
 
@@ -121,13 +121,13 @@ public sealed partial class MainForm
     private void OpenInventory()
     {
         if(_session is null)return;var inventory=_session.Cadete.Inventario;
-        using var dlg=new Form{Text="Inventario del cazador",Size=new Size(540,390),StartPosition=FormStartPosition.CenterParent,BackColor=Panel,ForeColor=Color.White,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
+        using var dlg=CreateSystemDialog("Inventario del cazador",new Size(540,390));
         dlg.Controls.Add(MakeLabel($"EQUIPO DEL CAZADOR   /   {inventory.Cantidad} DE {Inventario.Capacidad} ESPACIOS",12,Turquesa,true,22,18,450,28));
-        var list=new ListBox{Left=22,Top=55,Width=475,Height=210,BackColor=Color.FromArgb(10,8,24),ForeColor=Color.White,Font=new Font("Segoe UI",10)};
+        var list=new ListBox{Left=22,Top=55,Width=475,Height=210,Font=new Font("Bahnschrift",10)};StyleSystemInput(list);
         foreach(var item in inventory.Objetos)list.Items.Add($"{item.Nombre}   —   {item.Descripcion}");dlg.Controls.Add(list);
-        var use=MakeButton("USAR SELECCIÓN",Turquesa,Fondo,22,282,210,42);use.Click+=(_,_)=>{if(list.SelectedIndex<0){MessageBox.Show(dlg,"Selecciona un objeto primero.");return;}Act(_session.UsarObjeto(list.SelectedIndex));dlg.DialogResult=DialogResult.OK;dlg.Close();};dlg.Controls.Add(use);
-        var drop=MakeButton("DESCARTAR",Color.FromArgb(45,51,47),Color.White,245,282,130,42);drop.Click+=(_,_)=>{if(list.SelectedIndex<0){MessageBox.Show(dlg,"Selecciona un objeto primero.");return;}if(MessageBox.Show(dlg,"¿Descartar este objeto?","Confirmar",MessageBoxButtons.YesNo,MessageBoxIcon.Question)==DialogResult.Yes){_session.DescartarObjeto(list.SelectedIndex);dlg.DialogResult=DialogResult.OK;dlg.Close();}};dlg.Controls.Add(drop);
-        var done=MakeButton("CERRAR",Color.FromArgb(45,51,47),Color.White,390,282,107,42);done.Click+=(_,_)=>dlg.Close();dlg.Controls.Add(done);dlg.ShowDialog(this);RefreshBoard();
+        var use=MakeButton("USAR SELECCIÓN",Turquesa,Fondo,22,282,210,42);use.Click+=(_,_)=>{if(list.SelectedIndex<0){ShowSystemMessage("Selecciona un objeto del inventario para continuar.","Inventario",owner:dlg);return;}Act(_session.UsarObjeto(list.SelectedIndex));dlg.DialogResult=DialogResult.OK;dlg.Close();};dlg.Controls.Add(use);
+        var drop=MakeButton("DESCARTAR",Color.FromArgb(45,51,47),Color.White,245,282,130,42);drop.Click+=(_,_)=>{if(list.SelectedIndex<0){ShowSystemMessage("Selecciona primero el objeto que deseas retirar.","Inventario",owner:dlg);return;}if(ShowSystemMessage("Este objeto se retirará del inventario de campo.","Confirmar descarte",MessageBoxButtons.YesNo,MessageBoxIcon.Question,dlg)==DialogResult.Yes){_session.DescartarObjeto(list.SelectedIndex);dlg.DialogResult=DialogResult.OK;dlg.Close();}};dlg.Controls.Add(drop);
+        var done=MakeButton("CERRAR",Color.FromArgb(26,31,58),Color.White,390,282,107,42);done.Click+=(_,_)=>dlg.Close();dlg.Controls.Add(done);dlg.ShowDialog(this);RefreshBoard();
     }
 
     private void HandleMovementKey(object? sender,KeyEventArgs e)
@@ -142,17 +142,18 @@ public sealed partial class MainForm
 
     private void ShowPause()
     {
-        using var dlg=new Form{Text="SISTEMA // SISTEMA EN PAUSA",Size=new Size(460,430),StartPosition=FormStartPosition.CenterParent,BackColor=Fondo,ForeColor=Color.White,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};
+        using var dlg=CreateSystemDialog("Sistema en pausa",new Size(460,430));
         var frame=new Panel{Dock=DockStyle.Fill,BackColor=Panel,Padding=new Padding(24)};
         frame.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(210,111,103,255),1.4f);e.Graphics.DrawRectangle(pen,0,0,frame.Width-1,frame.Height-1);};
         dlg.Controls.Add(frame);
         frame.Controls.Add(MakeLabel("SISTEMA EN PAUSA",25,Color.White,true,45,30,300,42));
         frame.Controls.Add(MakeLabel($"La incursión está suspendida.\nTerritorio: {_session?.NombreMapa}.",10,TextoSuave,false,48,80,300,50));
         var resume=MakeButton("▶   CONTINUAR",Turquesa,Color.White,48,150,315,48);resume.Click+=(_,_)=>{dlg.DialogResult=DialogResult.OK;dlg.Close();};frame.Controls.Add(resume);
-        var save=MakeButton("GUARDAR PARTIDA",Color.FromArgb(20,24,51),Color.White,48,211,315,42);save.Click+=async(_,_)=>await SaveGame(true);frame.Controls.Add(save);
-        var menu=MakeButton("REGRESAR AL MENÚ",Color.FromArgb(25,19,48),Color.White,48,265,315,42);menu.Click+=async(_,_)=>{await SaveGame(false);dlg.Close();ShowMenu();};frame.Controls.Add(menu);
+        var save=MakeButton("GUARDAR PARTIDA",Color.FromArgb(20,24,51),Color.White,48,211,315,42);save.Click+=async(_,_)=>await SaveGame(true,dlg);frame.Controls.Add(save);
+        var menu=MakeButton("REGRESAR AL MENÚ",Color.FromArgb(25,19,48),Color.White,48,265,315,42);menu.Click+=async(_,_)=>{await SaveGame(false,dlg);dlg.Close();ShowMenu();};frame.Controls.Add(menu);
         var quit=MakeButton("SALIR DEL JUEGO",Color.FromArgb(21,17,37),TextoSuave,48,319,315,34);quit.Click+=(_,_)=>Close();frame.Controls.Add(quit);
         dlg.ShowDialog(this);
     }
 }
+
 
