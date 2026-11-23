@@ -38,11 +38,13 @@ public sealed partial class MainForm : Form
         FormClosed += (_, _) => _nexusLogo?.Dispose();
         KeyPreview = true;
         KeyDown += HandleMovementKey;
+        KeyUp += HandleMovementKeyUp;
         ShowMenu();
     }
 
     private void ShowMenu()
     {
+        if (_mapScene is not null) { _mapScene.Dispose(); _mapScene = null; }
         Controls.Clear();
         var root = new TableLayoutPanel { Dock=DockStyle.Fill, ColumnCount=2, RowCount=1, BackColor=Fondo };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 356));
@@ -137,7 +139,7 @@ public sealed partial class MainForm : Form
 
     private void ShowInformation()
     {
-        ShowSystemMessage("Explora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Guía del cazador",MessageBoxButtons.OK,MessageBoxIcon.Information);
+        ShowSystemMessage("Explora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nWASD o flechas: moverse. Shift: impulso evasivo. J o Espacio: atacar. Esc: pausa.","Guía del cazador",MessageBoxButtons.OK,MessageBoxIcon.Information);
     }
 
     private static void DrawMenuBackdrop(Graphics g, Rectangle bounds)
