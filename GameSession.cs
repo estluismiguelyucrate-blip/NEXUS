@@ -203,6 +203,30 @@ public sealed class GameSession
         return ResolverRespuesta(mensaje, true);
     }
 
+    public string AtacarEnTiempoReal()
+    {
+        if (EnemigoActual is null) return "No hay ninguna entidad en el sector.";
+        int antes = EnemigoActual.Energia;
+        Cadete.Atacar(EnemigoActual);
+        string mensaje = $"Golpe: {EnemigoActual.Nombre} perdió {antes - EnemigoActual.Energia} de energía.";
+        if (!EnemigoActual.Derrotado) return mensaje;
+        bool guard = _guardianActivo;
+        Cadete.GanarXP(25);
+        if (guard) Mision.EntidadSuperada = true;
+        EnemigoActual = null; _guardianActivo = false;
+        string botin = Consola.Azar.Next(100) < 50 && Cadete.Inventario.Agregar(Fabrica.ObjetoAleatorio()) ? " Encontraste suministros." : "";
+        return $"{mensaje} {(guard ? "Guardián eliminado" : "Entidad superada")}. +25 XP.{botin}";
+    }
+
+    public string RecibirAtaqueEnTiempoReal()
+    {
+        if (EnemigoActual is null || EnemigoActual is Robot) return "";
+        int energiaAntes = Cadete.Energia, estabilidadAntes = Cadete.Estabilidad;
+        EnemigoActual.Reaccionar(Cadete, true);
+        int dano = energiaAntes - Cadete.Energia, estabilidad = estabilidadAntes - Cadete.Estabilidad;
+        return $"El enemigo golpea: energía −{dano}, estabilidad −{estabilidad}.";
+    }
+
     public string Analizar()
     {
         if (EnemigoActual is null) return "No hay una entidad que analizar.";
@@ -317,4 +341,5 @@ public sealed class ObjetoGuardado
     public string? Nombre { get; set; }
     public int Bonus { get; set; }
 }
+
 
