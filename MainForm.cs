@@ -137,7 +137,7 @@ public sealed partial class MainForm : Form
 
     private void ShowInformation()
     {
-        MessageBox.Show(this,"NEXUS · SISTEMA DEL MONARCA\n\nExplora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Información de NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
+        ShowSystemMessage("Explora las Ruinas del Umbral, el Bosque Carmesí o la Ciudad Sumergida. Reúne suministros, supera al Guardián y regresa a la baliza.\n\nMovimiento: WASD, flechas o botones del mapa. Pausa: Esc.","Guía del cazador",MessageBoxButtons.OK,MessageBoxIcon.Information);
     }
 
     private static void DrawMenuBackdrop(Graphics g, Rectangle bounds)
@@ -154,6 +154,7 @@ public sealed partial class MainForm : Form
         int radius=Math.Max(44,Math.Min(bounds.Width,bounds.Height)/7), moonX=(int)(bounds.Width*.69),moonY=(int)(bounds.Height*.25);
         using(var glow=new SolidBrush(Color.FromArgb(25,174,120,255)))g.FillEllipse(glow,moonX-radius*2,moonY-radius*2,radius*4,radius*4);
         using(var moon=new LinearGradientBrush(new Rectangle(moonX-radius,moonY-radius,radius*2,radius*2),Color.FromArgb(235,222,255),Color.FromArgb(99,86,177),LinearGradientMode.ForwardDiagonal))g.FillEllipse(moon,moonX-radius,moonY-radius,radius*2,radius*2);
+        DrawPortal(g,(int)(bounds.Width*.45),(int)(bounds.Height*.57),Math.Max(48,Math.Min(bounds.Width,bounds.Height)/6));
         for(int i=0;i<14;i++)
         {
             int x=(i*137+50)%Math.Max(1,bounds.Width),w=36+(i*17)%45,h=bounds.Height/5+(i*43)%(Math.Max(1,bounds.Height/3));int y=bounds.Height*61/100-h;
@@ -167,6 +168,30 @@ public sealed partial class MainForm : Form
         using(var groundGlow=new Pen(Color.FromArgb(120,153,92,255),1.2f))g.DrawLine(groundGlow,0,ground+12,bounds.Width,ground+12);
         DrawMenuHunter(g,(int)(bounds.Width*.67),ground+22,Math.Min(bounds.Height/2,245));
         using(var shade=new LinearGradientBrush(bounds,Color.FromArgb(12,4,4,10),Color.FromArgb(125,4,3,14),LinearGradientMode.Vertical))g.FillRectangle(shade,bounds);
+    }
+
+    private static void DrawPortal(Graphics g,int centerX,int centerY,int radius)
+    {
+        var portalBounds=new Rectangle(centerX-radius,centerY-radius*3/2,radius*2,radius*3);
+        using(var aura=new SolidBrush(Color.FromArgb(28,139,73,255)))g.FillEllipse(aura,portalBounds.X-radius/2,portalBounds.Y-radius/3,portalBounds.Width+radius,portalBounds.Height+radius*2/3);
+        using(var interior=new LinearGradientBrush(portalBounds,Color.FromArgb(205,25,9,66),Color.FromArgb(225,5,8,25),LinearGradientMode.ForwardDiagonal))g.FillEllipse(interior,portalBounds);
+        using(var rim=new Pen(Color.FromArgb(205,162,112,255),3.2f))g.DrawEllipse(rim,portalBounds);
+        using(var inner=new Pen(Color.FromArgb(145,77,174,255),1.4f))g.DrawEllipse(inner,portalBounds.X+8,portalBounds.Y+8,portalBounds.Width-16,portalBounds.Height-16);
+        using(var flare=new Pen(Color.FromArgb(100,189,128,255),2))
+        {
+            g.DrawArc(flare,portalBounds.X-5,portalBounds.Y+portalBounds.Height/5,portalBounds.Width+10,portalBounds.Height*3/5,205,108);
+            g.DrawArc(flare,portalBounds.X+4,portalBounds.Y+portalBounds.Height/5,portalBounds.Width-8,portalBounds.Height*3/5,20,100);
+        }
+        using(var core=new LinearGradientBrush(new Rectangle(centerX-radius/5,centerY-radius,Math.Max(3,radius*2/5),radius*2),Color.FromArgb(0,180,127,255),Color.FromArgb(95,58,139,255),LinearGradientMode.Vertical))
+            g.FillEllipse(core,centerX-radius/5,centerY-radius,Math.Max(3,radius*2/5),radius*2);
+        using(var sparks=new SolidBrush(Color.FromArgb(185,198,151,255)))
+            for(int i=0;i<10;i++)
+            {
+                double angle=i*Math.PI/5;
+                int x=centerX+(int)(Math.Cos(angle)*(radius+6));
+                int y=centerY+(int)(Math.Sin(angle)*(radius*1.35));
+                g.FillEllipse(sparks,x-2,y-2,4,4);
+            }
     }
 
     private static void DrawMenuHunter(Graphics g,int x,int y,int height)
@@ -186,24 +211,37 @@ public sealed partial class MainForm : Form
 
     private void NewCadet()
     {
-        using var dlg = new Form { Text="Nueva expedición", Size=new Size(430,390), StartPosition=FormStartPosition.CenterParent, BackColor=Panel, ForeColor=Color.White, FormBorderStyle=FormBorderStyle.FixedDialog, MaximizeBox=false, MinimizeBox=false };
+        using var dlg = CreateSystemDialog("Registro del cazador",new Size(430,390));
         var name = new TextBox { Left=35,Top=60,Width=340,Text="Cadete" };
         var age = new NumericUpDown { Left=35,Top=130,Width=130,Minimum=18,Maximum=60,Value=24 };
         var map = new ComboBox { Left=35,Top=200,Width=340,DropDownStyle=ComboBoxStyle.DropDownList,FlatStyle=FlatStyle.Flat };
+        StyleSystemInput(name);StyleSystemInput(age);StyleSystemInput(map);
         foreach(string mapName in GameSession.NombresMapas) map.Items.Add(mapName);
         map.SelectedIndex=0;
         dlg.Controls.Add(MakeLabel("REGISTRO DEL CAZADOR", 15, Turquesa, true, 35, 20, 320, 28));
         dlg.Controls.Add(MakeLabel("Nombre",10,Color.White,false,35,42,100,20)); dlg.Controls.Add(name);
         dlg.Controls.Add(MakeLabel("Edad",10,Color.White,false,35,106,100,20)); dlg.Controls.Add(age);
         dlg.Controls.Add(MakeLabel("Territorio",10,Color.White,false,35,176,120,20)); dlg.Controls.Add(map);
-        var start=MakeButton("ACEPTAR Y DESPERTAR",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){MessageBox.Show(dlg,ex.Message,"Datos del cadete");}}; dlg.Controls.Add(start);
+        var start=MakeButton("ACEPTAR Y DESPERTAR",Turquesa,Fondo,35,260,340,46); start.Click+=(_,_)=>{try{_nombre=string.IsNullOrWhiteSpace(name.Text)?"Cadete":name.Text.Trim();_session=new GameSession();_session.Iniciar(_nombre,(int)age.Value,map.SelectedIndex);_failureReported=false;dlg.DialogResult=DialogResult.OK;dlg.Close();}catch(Exception ex){ShowSystemMessage(ex.Message,"Datos del cazador",owner:dlg);}}; dlg.Controls.Add(start);
         dlg.Controls.Add(MakeLabel("Cada portal conserva su propio mapa y progreso.",8.5f,TextoSuave,false,35,318,340,22));
         if(dlg.ShowDialog(this)==DialogResult.OK) ShowGame();
     }
 
-    private async Task TestSql()
-    { try { using var con=await OpenGameDatabase();await EnsureSchema(con);_status.Text="●  SQL SERVER: conexión activa";_status.ForeColor=Turquesa;MessageBox.Show(this,"Conexión correcta y tabla de partidas lista.","SQL Server",MessageBoxButtons.OK,MessageBoxIcon.Information); }catch(Exception ex){_status.Text="●  SQL SERVER: sin conexión";_status.ForeColor=Color.Salmon;MessageBox.Show(this,"No se pudo conectar. Revisa servidor, base y credenciales.\n\n"+ex.Message,"Error de conexión",MessageBoxButtons.OK,MessageBoxIcon.Warning);} }
-    private async Task SaveGame(bool notify)
+    private async Task TestSql(IWin32Window? owner = null)
+    {
+        try
+        {
+            using var con=await OpenGameDatabase();await EnsureSchema(con);
+            _status.Text="●  SQL SERVER: conexión activa";_status.ForeColor=Turquesa;
+            ShowSystemMessage("Conexión activa. El archivo de partidas del Sistema está disponible.","SQL Server",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
+        }
+        catch(Exception ex)
+        {
+            _status.Text="●  SQL SERVER: sin conexión";_status.ForeColor=Color.Salmon;
+            ShowSystemMessage("No fue posible conectar. Revisa el servidor, la base de datos y las credenciales.\n\n"+ex.Message,"Conexión no disponible",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);
+        }
+    }
+    private async Task SaveGame(bool notify, IWin32Window? owner = null)
     {
         if(_session is null)return;
         try
@@ -214,9 +252,9 @@ public sealed partial class MainForm : Form
             cmd.Parameters.AddWithValue("@nombre",_session.Cadete.Nombre);cmd.Parameters.AddWithValue("@fila",_session.Mapa.Fila);cmd.Parameters.AddWithValue("@columna",_session.Mapa.Columna);
             cmd.Parameters.AddWithValue("@energia",_session.Cadete.Energia);cmd.Parameters.AddWithValue("@estabilidad",_session.Cadete.Estabilidad);cmd.Parameters.AddWithValue("@xp",_session.Cadete.XP);
             cmd.Parameters.Add("@estado",System.Data.SqlDbType.NVarChar,-1).Value=_session.Exportar();await cmd.ExecuteNonQueryAsync();
-            if(notify)MessageBox.Show(this,"Partida guardada en SQL Server.","NEXUS",MessageBoxButtons.OK,MessageBoxIcon.Information);
+            if(notify)ShowSystemMessage("Progreso sincronizado en SQL Server.","Partida guardada",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
         }
-        catch(Exception ex){MessageBox.Show(this,"No se guardó la partida. Comprueba la conexión SQL Server.\n\n"+ex.Message,"Error al guardar",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+        catch(Exception ex){ShowSystemMessage("No se guardó la partida. Comprueba la conexión SQL Server.\n\n"+ex.Message,"Error de guardado",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);}
     }
     private async Task LoadGame()
     {
@@ -225,10 +263,10 @@ public sealed partial class MainForm : Form
             using var con=await OpenGameDatabase();await EnsureSchema(con);
             using var cmd=new SqlCommand("SELECT TOP 1 EstadoJson FROM dbo.PartidaNexus WHERE EstadoJson IS NOT NULL ORDER BY FechaActualizacion DESC",con);
             string? json=(string?)await cmd.ExecuteScalarAsync();
-            if(string.IsNullOrWhiteSpace(json)){MessageBox.Show(this,"No hay una partida completa guardada en SQL Server.","NEXUS");return;}
+            if(string.IsNullOrWhiteSpace(json)){ShowSystemMessage("No hay una partida sincronizada disponible para recuperar.","Sin partidas",MessageBoxButtons.OK,MessageBoxIcon.Information);return;}
             _session=GameSession.Restaurar(json);_nombre=_session.Cadete.Nombre;_failureReported=false;ShowGame();
         }
-        catch(Exception ex){MessageBox.Show(this,"No se pudo cargar. Configura y prueba SQL Server.\n\n"+ex.Message,"SQL Server",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+        catch(Exception ex){ShowSystemMessage("No se pudo recuperar la partida. Configura y prueba SQL Server.\n\n"+ex.Message,"Error de recuperación",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
     }
 
     private static async Task EnsureSchema(SqlConnection con)
@@ -260,7 +298,14 @@ public sealed partial class MainForm : Form
     }
 
     private void ConnectionSettings()
-    {using var dlg=new Form{Text="Conexión SQL Server",Size=new Size(590,310),StartPosition=FormStartPosition.CenterParent,BackColor=Panel,ForeColor=Color.White,FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false};dlg.Controls.Add(MakeLabel("CADENA DE CONEXIÓN",13,Turquesa,true,24,20,360,28));var box=new TextBox{Left=24,Top=60,Width=520,Height=70,Multiline=true,Text=_connectionString,ScrollBars=ScrollBars.Vertical};dlg.Controls.Add(box);dlg.Controls.Add(MakeLabel("Por defecto usa SQL Server LocalDB. Ajusta Server y Database si tu instancia es distinta.",9,Color.FromArgb(170,189,209),false,24,140,510,45));var save=MakeButton("PROBAR Y USAR",Turquesa,Fondo,24,204,235,44);save.Click+=async(_,_)=>{_connectionString=box.Text.Trim();await TestSql();};dlg.Controls.Add(save);var close=MakeButton("CERRAR",Color.FromArgb(39,56,77),Color.White,280,204,150,44);close.Click+=(_,_)=>dlg.Close();dlg.Controls.Add(close);dlg.ShowDialog(this);}
+    {
+        using var dlg=CreateSystemDialog("Conexión SQL Server",new Size(590,310));
+        dlg.Controls.Add(MakeLabel("CONECTAR AL ARCHIVO DE PARTIDAS",13,Turquesa,true,24,20,480,28));
+        var box=new TextBox{Left=24,Top=60,Width=520,Height=70,Multiline=true,Text=_connectionString,ScrollBars=ScrollBars.Vertical};StyleSystemInput(box);dlg.Controls.Add(box);
+        dlg.Controls.Add(MakeLabel("Usa SQL Server LocalDB por defecto. Puedes cambiar el servidor y la base sin alterar tu progreso.",9,Color.FromArgb(170,189,209),false,24,140,510,45));
+        var save=MakeButton("PROBAR Y CONECTAR",Turquesa,Fondo,24,204,235,44);save.Click+=async(_,_)=>{_connectionString=box.Text.Trim();await TestSql(dlg);};dlg.Controls.Add(save);
+        var close=MakeButton("CERRAR",Color.FromArgb(24,31,59),Color.White,280,204,150,44);close.Click+=(_,_)=>dlg.Close();dlg.Controls.Add(close);dlg.ShowDialog(this);
+    }
 
     private Panel Card()
     {
@@ -316,4 +361,5 @@ public sealed partial class MainForm : Form
         using(var tint=new LinearGradientBrush(bounds,Color.FromArgb(8,8,12,12),Color.FromArgb(70,8,12,13),LinearGradientMode.Vertical))g.FillRectangle(tint,bounds);
     }
 }
+
 
