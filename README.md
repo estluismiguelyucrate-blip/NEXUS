@@ -17,6 +17,7 @@ El script restaura las dependencias y abre el juego. También puedes abrir `NEXU
 ## Expediciones
 
 - Elige entre **Ruinas del Umbral**, **Bosque Carmesí** y **Ciudad Sumergida**.
+- Al crear un cazador, mira una cinemática introductoria con la historia del despertar y la aparición de los tres portales. Pulsa **Saltar** o Esc para continuar de inmediato.
 - Recorre los calabozos con movimiento continuo en tiempo real, cámara que sigue al cazador, encuentros con enemigos y escenarios propios para cada mapa.
 - Usa WASD o las flechas para moverte, Shift para impulsarte/esquivar, J o Espacio para atacar y Q para huir de un encuentro.
 - Investiga anomalías, combate al Guardián, reúne objetos y recupera el núcleo.
@@ -32,7 +33,7 @@ GitHub Actions genera un instalador de Windows en cada actualización de `main`.
 ## Proyecto
 
 - `MainForm.cs`: menú, selección de expedición y conexión SQL.
-- `GameView.cs`: HUD, mapa, inventario y pausa.
+- `GameView.cs`: HUD adaptable al tamaño de ventana, mapa, inventario y pausa.
 - `SystemTheme.cs`: estilo compartido de ventanas y avisos.
 - `GameSession.cs` y `Program.cs`: estado de la partida y reglas del juego.
 - `assets/`: logotipo e icono de NEXUS.
