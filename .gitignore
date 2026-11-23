@@ -52,6 +52,8 @@ secrets.json
 # Test and coverage outputs
 TestResults/
 coverage/
+/artifacts/
+/publish/
 
 # Local submission copy with personal learning assessment
 /docs/NEXUS-manual-tecnico-completo-local.md
@@ -64,3 +66,4 @@ coverage/
 
 # Local submission document
 /xgdfgfdcg_actualizado.docx
+

@@ -22,6 +22,7 @@ public sealed class DungeonMapScene : Control
     private float _attackFlash;
     private float _dashCooldown;
     private float _enemyAttackCooldown = 1.1f;
+    private PointF? _destination;
     private int _lastZoneRow = -1, _lastZoneColumn = -1;
 
     public DungeonMapScene()
@@ -57,6 +58,7 @@ public sealed class DungeonMapScene : Control
         if (pressed)
         {
             if (!_keys.Add(key)) return;
+            if (key is Keys.W or Keys.A or Keys.S or Keys.D or Keys.Up or Keys.Down or Keys.Left or Keys.Right) _destination = null;
             if (key is Keys.Space or Keys.J) Attack();
             if (key == Keys.Q && _session?.EnemigoActual is not null) _action?.Invoke(_session.Escapar());
             if (key == Keys.ShiftKey && _dashCooldown <= 0) _dashCooldown = .55f;
@@ -78,9 +80,11 @@ public sealed class DungeonMapScene : Control
         GraphicsState state = g.Save();
         g.TranslateTransform(-camera.X, -camera.Y);
         if (_terrainCache is not null) g.DrawImageUnscaled(_terrainCache, 0, 0);
+        DrawRoutes(g);
         for (int row = 0; row < _session.Mapa.Filas; row++)
             for (int column = 0; column < _session.Mapa.Columnas; column++)
                 DrawZone(g, row, column);
+        if (_destination is PointF destination) DrawDestination(g, destination);
         DrawPlayer(g);
         if (_session.EnemigoActual is not null) DrawEnemy(g, _enemyPosition);
         g.Restore(state);
@@ -103,6 +107,12 @@ public sealed class DungeonMapScene : Control
     {
         base.OnMouseClick(e);
         Focus();
+        if (_session is null || e.Button != MouseButtons.Left) return;
+        PointF camera = Camera();
+        float worldWidth = _session.Mapa.Columnas * 280, worldHeight = _session.Mapa.Filas * 220;
+        var target = new PointF(Math.Clamp(e.X + camera.X, 12, worldWidth - 12), Math.Clamp(e.Y + camera.Y, 12, worldHeight - 12));
+        if (!IsBlocked(target.X, target.Y)) _destination = target;
+        Invalidate();
     }
 
     private PointF Center(int row, int column)
@@ -122,7 +132,18 @@ public sealed class DungeonMapScene : Control
 
         float dx = Axis(Keys.A, Keys.Left, Keys.D, Keys.Right);
         float dy = Axis(Keys.W, Keys.Up, Keys.S, Keys.Down);
-        if (dx == 0 && dy == 0) { Invalidate(); return; }
+        if (dx == 0 && dy == 0 && _destination is PointF target)
+        {
+            float tx = target.X - _player.X, ty = target.Y - _player.Y;
+            float distance = MathF.Sqrt(tx * tx + ty * ty);
+            if (distance < 8) _destination = null;
+            else { dx = tx / distance; dy = ty / distance; }
+        }
+        if (dx == 0 && dy == 0)
+        {
+            if (_session.EnemigoActual is not null) Invalidate();
+            return;
+        }
         if (dx != 0 && dy != 0) { dx *= .7071f; dy *= .7071f; }
         if (dx != 0) _facing = dx;
         float speed = _dashCooldown > .30f ? 570 : 245;
@@ -205,8 +226,9 @@ public sealed class DungeonMapScene : Control
     private PointF Camera()
     {
         float worldWidth = _session!.Mapa.Columnas * 280, worldHeight = _session.Mapa.Filas * 220;
-        return new PointF(Math.Clamp(_player.X - Width / 2f, 0, Math.Max(0, worldWidth - Width)),
-            Math.Clamp(_player.Y - Height / 2f, 0, Math.Max(0, worldHeight - Height)));
+        float x = worldWidth <= Width ? -(Width - worldWidth) / 2f : Math.Clamp(_player.X - Width / 2f, 0, worldWidth - Width);
+        float y = worldHeight <= Height ? -(Height - worldHeight) / 2f : Math.Clamp(_player.Y - Height / 2f, 0, worldHeight - Height);
+        return new PointF(x, y);
     }
 
     private void DrawTerrain(Graphics g)
@@ -216,15 +238,15 @@ public sealed class DungeonMapScene : Control
         int width = roomWidth * _session.Mapa.Columnas, height = roomHeight * _session.Mapa.Filas;
         Color tint = _session.MapaId switch
         {
-            1 => Color.FromArgb(24, 64, 35),
-            2 => Color.FromArgb(16, 47, 72),
-            _ => Color.FromArgb(29, 24, 62)
+            1 => Color.FromArgb(56, 48, 37),
+            2 => Color.FromArgb(26, 72, 105),
+            _ => Color.FromArgb(45, 37, 85)
         };
-        using var floor = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.FromArgb(26, tint), Color.FromArgb(4, 5, 16), LinearGradientMode.Vertical);
+        using var floor = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.FromArgb(105, tint), Color.FromArgb(17, 5, 8, 21), LinearGradientMode.Vertical);
         g.FillRectangle(floor, 0, 0, width, height);
         var random = new Random(931 + _session.MapaId * 91);
-        using var stone = new SolidBrush(Color.FromArgb(82, 24, 23, 47));
-        using var glint = new SolidBrush(Color.FromArgb(37, 161, 124, 248));
+        using var stone = new SolidBrush(Color.FromArgb(92, 31, 27, 48));
+        using var glint = new SolidBrush(Color.FromArgb(66, 176, 138, 255));
         for (int i = 0; i < 420; i++)
         {
             int x = random.Next(width), y = random.Next(height), s = random.Next(3, 13);
@@ -267,13 +289,13 @@ public sealed class DungeonMapScene : Control
                 {
                     float treeX = center.X + ((row + col) % 2 == 0 ? -92 : 94), treeY = center.Y - 38;
                     float dx = x - treeX, dy = y - treeY;
-                    if (dx * dx + dy * dy < 31 * 31) return true;
+                    if (dx * dx + dy * dy < 48 * 48) return true;
                 }
                 else
                 {
                     float templeX = center.X + 94, templeY = center.Y - 25;
-                    if (Math.Abs(x - (templeX - 18)) < 14 && y > templeY - 22 && y < templeY + 43) return true;
-                    if (Math.Abs(x - (templeX + 18)) < 14 && y > templeY - 22 && y < templeY + 43) return true;
+                    if (Math.Abs(x - (templeX - 28)) < 10 && y > templeY - 17 && y < templeY + 40) return true;
+                    if (Math.Abs(x - (templeX + 28)) < 10 && y > templeY - 17 && y < templeY + 40) return true;
                 }
             }
         return false;
@@ -281,28 +303,37 @@ public sealed class DungeonMapScene : Control
 
     private static void DrawRuin(Graphics g, float x, float y)
     {
-        using var ruin = new SolidBrush(Color.FromArgb(150, 13, 12, 31));
-        g.FillPolygon(ruin, new[] { new PointF(x - 26, y + 27), new PointF(x - 19, y - 16), new PointF(x - 10, y - 23), new PointF(x - 2, y - 12), new PointF(x + 1, y + 25) });
-        g.FillPolygon(ruin, new[] { new PointF(x + 4, y + 25), new PointF(x + 7, y - 7), new PointF(x + 17, y - 21), new PointF(x + 25, y - 6), new PointF(x + 29, y + 27) });
+        using var ruin = new SolidBrush(Color.FromArgb(218, 15, 12, 35));
+        using var edge = new Pen(Color.FromArgb(91, 135, 110, 189), 1.6f);
+        g.FillPolygon(ruin, new[] { new PointF(x - 44, y + 49), new PointF(x - 34, y - 36), new PointF(x - 17, y - 48), new PointF(x - 4, y - 26), new PointF(x + 1, y + 46) });
+        g.FillPolygon(ruin, new[] { new PointF(x + 5, y + 47), new PointF(x + 11, y - 21), new PointF(x + 31, y - 43), new PointF(x + 45, y - 11), new PointF(x + 49, y + 48) });
+        g.DrawLine(edge, x - 33, y - 33, x - 18, y - 43);
+        g.DrawLine(edge, x + 12, y - 18, x + 30, y - 38);
     }
 
     private static void DrawTree(Graphics g, float x, float y)
     {
-        using var trunk = new SolidBrush(Color.FromArgb(180, 28, 17, 31));
-        using var crown = new SolidBrush(Color.FromArgb(185, 23, 49, 44));
-        g.FillRectangle(trunk, x - 3, y - 4, 6, 24);
-        g.FillEllipse(crown, x - 19, y - 31, 38, 39);
-        using var leaf = new Pen(Color.FromArgb(78, 135, 64, 91), 1.4f);
-        g.DrawArc(leaf, x - 16, y - 28, 30, 28, 20, 120);
+        using var trunk = new SolidBrush(Color.FromArgb(220, 47, 23, 38));
+        using var crownShadow = new SolidBrush(Color.FromArgb(125, 12, 19, 30));
+        using var crown = new SolidBrush(Color.FromArgb(205, 42, 47, 58));
+        g.FillEllipse(crownShadow, x - 42, y - 24, 84, 76);
+        g.FillRectangle(trunk, x - 7, y - 8, 14, 46);
+        g.FillEllipse(crown, x - 34, y - 57, 68, 70);
+        g.FillEllipse(crown, x - 49, y - 39, 50, 51);
+        g.FillEllipse(crown, x - 1, y - 42, 52, 54);
+        using var leaf = new Pen(Color.FromArgb(128, 166, 83, 116), 2f);
+        g.DrawArc(leaf, x - 30, y - 53, 60, 52, 20, 125);
     }
 
     private static void DrawTemple(Graphics g, float x, float y)
     {
-        using var stone = new SolidBrush(Color.FromArgb(150, 12, 24, 41));
-        g.FillRectangle(stone, x - 22, y - 10, 8, 39); g.FillRectangle(stone, x + 14, y - 10, 8, 39);
-        g.FillPolygon(stone, new[] { new PointF(x - 28, y - 10), new PointF(x, y - 32), new PointF(x + 28, y - 10) });
-        using var water = new Pen(Color.FromArgb(69, 74, 160, 220), 1.3f);
-        g.DrawArc(water, x - 38, y + 25, 76, 17, 0, 180);
+        using var stone = new SolidBrush(Color.FromArgb(217, 10, 29, 48));
+        using var edge = new Pen(Color.FromArgb(112, 103, 189, 226), 1.6f);
+        g.FillRectangle(stone, x - 35, y - 17, 13, 57); g.FillRectangle(stone, x + 22, y - 17, 13, 57);
+        g.FillPolygon(stone, new[] { new PointF(x - 45, y - 17), new PointF(x, y - 52), new PointF(x + 45, y - 17) });
+        g.DrawLine(edge, x - 40, y - 15, x, y - 46); g.DrawLine(edge, x, y - 46, x + 40, y - 15);
+        using var water = new Pen(Color.FromArgb(126, 74, 160, 220), 2f);
+        g.DrawArc(water, x - 56, y + 37, 112, 28, 0, 180);
     }
 
     private void DrawPlayer(Graphics g)
@@ -310,13 +341,15 @@ public sealed class DungeonMapScene : Control
         PointF p = _player;
         bool moving = _keys.Any(k => k is Keys.W or Keys.A or Keys.S or Keys.D or Keys.Up or Keys.Down or Keys.Left or Keys.Right);
         float bob = moving ? MathF.Sin(_walkPhase) * 2.4f : 0;
-        using var shadow = new SolidBrush(Color.FromArgb(110, 0, 0, 8));
-        g.FillEllipse(shadow, p.X - 15, p.Y + 10, 30, 11);
-        using var aura = new SolidBrush(Color.FromArgb(75, 138, 91, 255));
-        g.FillEllipse(aura, p.X - 20, p.Y - 24 + bob, 40, 41);
-        using var cloak = new SolidBrush(Color.FromArgb(248, 8, 9, 25));
-        g.FillEllipse(cloak, p.X - 6, p.Y - 24 + bob, 12, 12);
-        g.FillPolygon(cloak, new[] { new PointF(p.X - 8, p.Y - 13 + bob), new PointF(p.X + 8, p.Y - 13 + bob), new PointF(p.X + 13, p.Y + 7 + bob), new PointF(p.X, p.Y + 13 + bob), new PointF(p.X - 13, p.Y + 7 + bob) });
+        using var shadow = new SolidBrush(Color.FromArgb(140, 0, 0, 8));
+        g.FillEllipse(shadow, p.X - 22, p.Y + 14, 44, 14);
+        using var aura = new SolidBrush(Color.FromArgb(78, 138, 91, 255));
+        g.FillEllipse(aura, p.X - 29, p.Y - 36 + bob, 58, 58);
+        using var cloak = new SolidBrush(Color.FromArgb(250, 7, 8, 24));
+        using var edge = new Pen(Color.FromArgb(174, 161, 119, 255), 1.5f);
+        g.FillEllipse(cloak, p.X - 9, p.Y - 34 + bob, 18, 19);
+        var coat = new[] { new PointF(p.X - 10, p.Y - 17 + bob), new PointF(p.X + 10, p.Y - 17 + bob), new PointF(p.X + 20, p.Y + 13 + bob), new PointF(p.X, p.Y + 19 + bob), new PointF(p.X - 20, p.Y + 13 + bob) };
+        g.FillPolygon(cloak, coat); g.DrawPolygon(edge, coat);
         float swing = _attackFlash > 0 ? (float)Math.Sin((_attackFlash / .3) * Math.PI) * 21 : 0;
         using var bladeGlow = new Pen(Color.FromArgb(70, Violet), 7f);
         using var blade = new Pen(Color.FromArgb(230, 211, 190, 255), 2.2f);
@@ -328,7 +361,10 @@ public sealed class DungeonMapScene : Control
     private void DrawBackdrop(Graphics g)
     {
         var bounds = ClientRectangle;
-        using (var sky = new LinearGradientBrush(bounds, Color.FromArgb(30, 23, 72), Color.FromArgb(4, 7, 20), LinearGradientMode.Vertical))
+        int mapId = _session?.MapaId ?? 0;
+        Color skyTop = mapId switch { 1 => Color.FromArgb(73, 22, 47), 2 => Color.FromArgb(15, 57, 87), _ => Color.FromArgb(42, 28, 91) };
+        Color atmosphere = mapId switch { 1 => Color.FromArgb(113, 52, 81), 2 => Color.FromArgb(72, 163, 201), _ => Color.FromArgb(150, 109, 255) };
+        using (var sky = new LinearGradientBrush(bounds, skyTop, Color.FromArgb(4, 7, 20), LinearGradientMode.Vertical))
             g.FillRectangle(sky, bounds);
 
         var random = new Random(27);
@@ -342,9 +378,9 @@ public sealed class DungeonMapScene : Control
 
         int moonRadius = Math.Max(24, Math.Min(Width, Height) / 9);
         int moonX = Width * 79 / 100, moonY = Height / 5;
-        using (var moonGlow = new SolidBrush(Color.FromArgb(25, 150, 109, 255)))
+        using (var moonGlow = new SolidBrush(Color.FromArgb(35, atmosphere)))
             g.FillEllipse(moonGlow, moonX - moonRadius * 2, moonY - moonRadius * 2, moonRadius * 4, moonRadius * 4);
-        using (var moon = new LinearGradientBrush(new Rectangle(moonX - moonRadius, moonY - moonRadius, moonRadius * 2, moonRadius * 2), Color.FromArgb(205, 207, 208, 255), Color.FromArgb(74, 67, 137), LinearGradientMode.ForwardDiagonal))
+        using (var moon = new LinearGradientBrush(new Rectangle(moonX - moonRadius, moonY - moonRadius, moonRadius * 2, moonRadius * 2), Color.FromArgb(205, 207, 208, 255), Color.FromArgb(105, atmosphere), LinearGradientMode.ForwardDiagonal))
             g.FillEllipse(moon, moonX - moonRadius, moonY - moonRadius, moonRadius * 2, moonRadius * 2);
 
         int horizon = Height * 56 / 100;
@@ -360,7 +396,7 @@ public sealed class DungeonMapScene : Control
             DrawTower(g, Width * 70 / 100, horizon + 6, Math.Max(30, Width / 16), Math.Max(56, Height / 4), mountains);
         }
 
-        using (var mist = new SolidBrush(Color.FromArgb(19, 122, 91, 223)))
+        using (var mist = new SolidBrush(Color.FromArgb(28, atmosphere)))
             for (int i = 0; i < 9; i++)
                 g.FillEllipse(mist, i * Width / 8 - 25, horizon + (i % 3) * 12, Width / 5, 26);
 
@@ -393,15 +429,30 @@ public sealed class DungeonMapScene : Control
     {
         PointF from = Center(rowA, columnA), to = Center(rowB, columnB);
         bool known = _session!.Mapa.FueVisitada(rowA, columnA) && _session.Mapa.FueVisitada(rowB, columnB);
-        using var shadow = new Pen(Color.FromArgb(110, 3, 5, 17), 9f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-        using var energy = new Pen(Color.FromArgb(known ? 142 : 48, known ? 125 : 82, known ? 102 : 78, 214), known ? 2f : 1.4f)
+        using var shadow = new Pen(Color.FromArgb(185, 3, 5, 17), 58f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var stone = new Pen(Color.FromArgb(known ? 170 : 112, 37, 31, 66), 47f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var path = new Pen(Color.FromArgb(known ? 210 : 145, 30, 28, 55), 34f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        using var energy = new Pen(Color.FromArgb(known ? 195 : 92, known ? 151 : 113, known ? 112 : 100, 231), known ? 2.2f : 1.4f)
         {
             StartCap = LineCap.Round,
             EndCap = LineCap.Round,
             DashStyle = known ? DashStyle.Solid : DashStyle.Dot
         };
         g.DrawLine(shadow, from, to);
+        g.DrawLine(stone, from, to);
+        g.DrawLine(path, from, to);
         g.DrawLine(energy, from, to);
+    }
+
+    private static void DrawDestination(Graphics g, PointF target)
+    {
+        float pulse = 5 + MathF.Abs(MathF.Sin(Environment.TickCount64 / 180f)) * 4;
+        using var glow = new SolidBrush(Color.FromArgb(45, 115, 214, 255));
+        using var ring = new Pen(Color.FromArgb(220, 177, 228, 255), 2f);
+        g.FillEllipse(glow, target.X - 22, target.Y - 22, 44, 44);
+        g.DrawEllipse(ring, target.X - pulse, target.Y - pulse, pulse * 2, pulse * 2);
+        g.DrawLine(ring, target.X - 14, target.Y, target.X + 14, target.Y);
+        g.DrawLine(ring, target.X, target.Y - 14, target.X, target.Y + 14);
     }
 
     private void DrawZone(Graphics g, int row, int column)
@@ -426,8 +477,8 @@ public sealed class DungeonMapScene : Control
             return;
         }
 
-        PointF[] island = Island(center, 40, 18);
-        PointF[] shadow = Island(new PointF(center.X, center.Y + 8), 42, 18);
+        PointF[] island = Island(center, 76, 40);
+        PointF[] shadow = Island(new PointF(center.X, center.Y + 15), 80, 43);
         using (var shade = new SolidBrush(Color.FromArgb(185, 3, 5, 16))) g.FillPolygon(shade, shadow);
 
         Color topColor = type switch
@@ -469,7 +520,7 @@ public sealed class DungeonMapScene : Control
         new PointF(c.X + rx * .12f, c.Y + ry), new PointF(c.X - rx * .64f, c.Y + ry * .66f)
     };
 
-    private static RectangleF ZoneBounds(PointF c) => new(c.X - 36, c.Y - 22, 72, 44);
+    private static RectangleF ZoneBounds(PointF c) => new(c.X - 72, c.Y - 43, 144, 86);
 
     private static void DrawRockEdges(Graphics g, PointF c, bool lit)
     {
@@ -577,7 +628,7 @@ public sealed class DungeonMapScene : Control
     private void DrawHoverReadout(Graphics g)
     {
         if (_session is null) return;
-        string text = _session.EnemigoActual is not null ? "J / ESPACIO ATACAR   ·   SHIFT ESQUIVAR   ·   Q ESCAPAR" : "WASD MOVERSE   ·   SHIFT IMPULSO   ·   ENTRA AL PORTAL";
+        string text = _session.EnemigoActual is not null ? "J / ESPACIO ATACAR   ·   SHIFT ESQUIVAR   ·   Q ESCAPAR" : "WASD / CLIC MOVERSE   ·   SHIFT IMPULSO   ·   EXPLORA EL MAPA";
         using var background = new SolidBrush(Color.FromArgb(215, 7, 10, 28));
         using var edge = new Pen(Color.FromArgb(125, Violet));
         var rectangle = new Rectangle(13, 12, 310, 25);

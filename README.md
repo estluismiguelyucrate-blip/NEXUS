@@ -20,15 +20,16 @@ El script restaura las dependencias y abre el juego. También puedes abrir `NEXU
 - Al crear un cazador, mira una cinemática introductoria con la historia del despertar y la aparición de los tres portales. Pulsa **Saltar** o Esc para continuar de inmediato.
 - Recorre los calabozos con movimiento continuo en tiempo real, cámara que sigue al cazador, encuentros con enemigos y escenarios propios para cada mapa.
 - Usa WASD o las flechas para moverte, Shift para impulsarte/esquivar, J o Espacio para atacar y Q para huir de un encuentro.
+- Haz clic en el mapa para caminar hasta ese punto.
 - Investiga anomalías, combate al Guardián, reúne objetos y recupera el núcleo.
 - Administra energía, estabilidad, inventario y experiencia; luego vuelve a la extracción.
-- Guarda o recupera partidas en SQL Server o LocalDB desde la configuración.
+- Guarda y continúa partidas localmente; SQL Server es opcional para copias sincronizadas.
 
-La conexión a SQL Server es opcional para iniciar y jugar. Se necesita para guardar o continuar partidas. La cadena predeterminada usa `Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;`.
+Los guardados locales se almacenan en `%LOCALAPPDATA%\NEXUS\savegame.json`. SQL Server es opcional para copias sincronizadas; LocalDB no es requisito para jugar o guardar.
 
 ## Descargar el instalador
 
-GitHub Actions genera un instalador de Windows en cada actualización de `main`. En el repositorio, abre **Actions**, elige la ejecución correcta de **NEXUS Windows Installer** y descarga el artefacto `NEXUS-Setup-v2.0.0`.
+GitHub Actions genera un instalador y un paquete Windows x64 autocontenido en cada actualización de `main`. En **Actions**, descarga `NEXUS-Setup-v2.0.0` para instalar en Windows o `NEXUS-Steam-Windows-x64` para preparar la carga mediante SteamPipe. El paquete no reemplaza la configuración de App ID, depot, ficha, precio ni revisión en Steamworks.
 
 ## Proyecto
 
@@ -37,6 +38,7 @@ GitHub Actions genera un instalador de Windows en cada actualización de `main`.
 - `SystemTheme.cs`: estilo compartido de ventanas y avisos.
 - `GameSession.cs` y `Program.cs`: estado de la partida y reglas del juego.
 - `assets/`: logotipo e icono de NEXUS.
+- `docs/steam-release.txt`: instrucciones para cargar el paquete Windows en SteamPipe.
 
 La solución principal es `NEXUS 2.0.slnx`. La carpeta `nexus visual` conserva un lanzador heredado y no forma parte de esa solución.
 

@@ -1,0 +1,13 @@
+NEXUS — Windows x64 SteamPipe build
+
+This folder contains the self-contained Windows build. Launch NEXUS.exe from the
+Steam launch option, with the published assets folder beside it.
+
+To upload it, create the app and Windows depot in Steamworks, then use SteamPipe
+to upload the contents of this folder. Do not upload this ZIP as a game installer.
+Set the store platforms and supported features to match what this build actually
+contains. Test the uploaded build from Steam before submitting it for review.
+
+The Steam App ID, depot IDs, store page, pricing, screenshots, and Steamworks
+credentials belong to the developer account and must be configured in Steamworks.
+

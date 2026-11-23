@@ -11,8 +11,12 @@ public sealed partial class MainForm : Form
     private static readonly Color TextoSuave = Color.FromArgb(166, 180, 211);
     private Image? _nexusLogo;
     private string _connectionString = @"Server=(localdb)\MSSQLLocalDB;Database=NEXUS;Trusted_Connection=True;TrustServerCertificate=True;";
+    private bool _sqlAvailable;
+    private string LocalSavePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NEXUS", "savegame.json");
     private GameSession? _session;
     private string _nombre = "Cadete";
+    private readonly System.Windows.Forms.Timer _autosaveTimer = new() { Interval = 1800 };
+    private bool _saveInProgress;
     private Label _status = null!;
     private Label _stats = null!;
     private Label _log = null!;
@@ -35,7 +39,8 @@ public sealed partial class MainForm : Form
         if (File.Exists(logoPath)) _nexusLogo = Image.FromFile(logoPath);
         string iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "nexus.ico");
         if (File.Exists(iconPath)) Icon = new Icon(iconPath);
-        FormClosed += (_, _) => _nexusLogo?.Dispose();
+        FormClosed += (_, _) => { _nexusLogo?.Dispose(); _autosaveTimer.Dispose(); };
+        _autosaveTimer.Tick += async (_, _) => { _autosaveTimer.Stop(); await SaveGame(false); };
         KeyPreview = true;
         KeyDown += HandleMovementKey;
         KeyUp += HandleMovementKeyUp;
@@ -237,17 +242,20 @@ public sealed partial class MainForm : Form
 
     private void PlayAwakeningCinematic(Action onComplete)
     {
+        Rectangle workArea = Screen.FromControl(this).WorkingArea;
+        var sceneSize = new Size(Math.Min(1160, workArea.Width), Math.Min(760, workArea.Height));
         using var scene = new Form
         {
             Text = "NEXUS // EL DESPERTAR",
             FormBorderStyle = FormBorderStyle.None,
-            StartPosition = FormStartPosition.CenterParent,
-            ClientSize = new Size(1040, 600),
+            StartPosition = FormStartPosition.Manual,
+            ClientSize = sceneSize,
             BackColor = Fondo,
             KeyPreview = true,
             ShowInTaskbar = false
         };
-        var canvas = new Panel { Dock = DockStyle.Fill, BackColor = Fondo };
+        scene.Location = new Point(workArea.Left + (workArea.Width - scene.Width) / 2, workArea.Top + (workArea.Height - scene.Height) / 2);
+        var canvas = new BufferedPanel { Dock = DockStyle.Fill, BackColor = Fondo };
         scene.Controls.Add(canvas);
         var skip = MakeButton("SALTAR  ›", Color.FromArgb(28,20,51), Color.White, 0, 0, 142, 38);
         skip.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
@@ -259,10 +267,10 @@ public sealed partial class MainForm : Form
         string[] titles = { "LA NOCHE EN QUE TODO CAMBIÓ", "EL DESPERTAR", "TRES PORTALES", "TU PRIMERA INCURSIÓN" };
         string[] lines =
         {
-            "Una grieta violeta rasgó el cielo. Algo cruzó desde el otro lado.",
-            "Herido y sin fuerzas, escuchaste una voz: el Sistema te eligió.",
-            "Las Ruinas del Umbral, el Bosque Carmesí y la Ciudad Sumergida quedaron conectados.",
-            "Sobrevive, derrota al Guardián y recupera el núcleo para cerrar la brecha."
+            "Una grieta violeta abrió el cielo sobre NEXUS. Algo respondió desde el otro lado.",
+            "Al borde de la derrota, el Sistema despertó tu poder y te ofreció otra oportunidad.",
+            "Tres territorios quedaron conectados: ruinas antiguas, bosque maldito y ciudad sumergida.",
+            "Recupera el núcleo, derrota al Guardián y alcanza la extracción. La incursión comienza."
         };
         var clock = new System.Windows.Forms.Timer { Interval = 40 };
         double elapsed = 0;
@@ -280,26 +288,31 @@ public sealed partial class MainForm : Form
         canvas.Paint += (_, e) =>
         {
             var g = e.Graphics;
-            DrawMenuBackdrop(g, canvas.ClientRectangle);
-            float beat = (float)(.5 + .5 * Math.Sin(elapsed * 2.4));
-            int halo = (int)(130 + beat * 55);
-            using (var glow = new SolidBrush(Color.FromArgb(30 + (int)(beat * 24), 146, 74, 255)))
-                g.FillEllipse(glow, canvas.Width / 2 - halo, canvas.Height / 2 - halo, halo * 2, halo * 2);
-            using (var veil = new SolidBrush(Color.FromArgb(108, 3, 3, 12))) g.FillRectangle(veil, canvas.ClientRectangle);
             int phase = Math.Min(3, (int)(elapsed / 4.25));
             float phaseTime = (float)(elapsed % 4.25);
             int alpha = Math.Clamp((int)(Math.Min(1, Math.Min(phaseTime / .55, (4.25 - phaseTime) / .55)) * 255), 0, 255);
-            using var titleFont = new Font("Bahnschrift", 23, FontStyle.Bold);
-            using var bodyFont = new Font("Bahnschrift", 13, FontStyle.Regular);
+            DrawCinematicFrame(g, canvas.ClientRectangle, phase, phaseTime);
+            int fontScale = Math.Clamp(canvas.Width / 52, 16, 25);
+            using var titleFont = new Font("Bahnschrift", fontScale, FontStyle.Bold);
+            using var bodyFont = new Font("Bahnschrift", Math.Max(11, fontScale / 2), FontStyle.Regular);
             using var titleBrush = new SolidBrush(Color.FromArgb(alpha, 235, 222, 255));
             using var bodyBrush = new SolidBrush(Color.FromArgb(alpha, 220, 216, 235));
-            var titleRect = new RectangleF(80, canvas.Height - 185, canvas.Width - 160, 42);
-            var bodyRect = new RectangleF(120, canvas.Height - 132, canvas.Width - 240, 58);
+            int footerTop = canvas.Height - Math.Max(158, canvas.Height / 4);
+            var footer = new Rectangle(0, footerTop, canvas.Width, canvas.Height - footerTop);
+            using (var shade = new LinearGradientBrush(footer, Color.FromArgb(0, 4, 4, 16), Color.FromArgb(240, 4, 4, 16), LinearGradientMode.Vertical))
+                g.FillRectangle(shade, footer);
+            var titleRect = new RectangleF(36, footerTop + 14, canvas.Width - 72, 38);
+            var bodyRect = new RectangleF(48, footerTop + 58, canvas.Width - 96, Math.Max(54, canvas.Height - footerTop - 108));
             using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             g.DrawString(titles[phase], titleFont, titleBrush, titleRect, format);
             g.DrawString(lines[phase], bodyFont, bodyBrush, bodyRect, format);
             using var rule = new Pen(Color.FromArgb(alpha, 153, 92, 255), 2);
-            g.DrawLine(rule, canvas.Width / 2 - 140, (int)titleRect.Bottom + 3, canvas.Width / 2 + 140, (int)titleRect.Bottom + 3);
+            g.DrawLine(rule, canvas.Width / 2 - 140, (int)titleRect.Bottom + 2, canvas.Width / 2 + 140, (int)titleRect.Bottom + 2);
+            using var progressBack = new SolidBrush(Color.FromArgb(120, 60, 51, 78));
+            using var progressFill = new SolidBrush(Color.FromArgb(215, 157, 101, 255));
+            int progressWidth = canvas.Width - 56;
+            g.FillRectangle(progressBack, 28, canvas.Height - 8, progressWidth, 3);
+            g.FillRectangle(progressFill, 28, canvas.Height - 8, (int)(progressWidth * Math.Clamp((float)(elapsed / 17d), 0, 1)), 3);
         };
         clock.Tick += (_, _) => { elapsed += clock.Interval / 1000d; canvas.Invalidate(); if (elapsed >= 17) Finish(); };
         scene.Shown += (_, _) => clock.Start();
@@ -308,37 +321,163 @@ public sealed partial class MainForm : Form
         onComplete();
     }
 
+    private static void DrawCinematicFrame(Graphics g, Rectangle bounds, int phase, float progress)
+    {
+        if (bounds.Width < 1 || bounds.Height < 1) return;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        var sky = phase switch
+        {
+            1 => Color.FromArgb(48, 19, 83),
+            2 => Color.FromArgb(22, 36, 82),
+            3 => Color.FromArgb(39, 19, 76),
+            _ => Color.FromArgb(42, 25, 91)
+        };
+        using (var gradient = new LinearGradientBrush(bounds, sky, Color.FromArgb(4, 4, 17), LinearGradientMode.Vertical))
+            g.FillRectangle(gradient, bounds);
+
+        int horizon = bounds.Height * 62 / 100;
+        using (var far = new SolidBrush(Color.FromArgb(190, 13, 9, 33)))
+            g.FillPolygon(far, new[] { new Point(0, horizon + 35), new Point(bounds.Width / 7, horizon - 22), new Point(bounds.Width / 4, horizon + 18), new Point(bounds.Width * 2 / 5, horizon - 64), new Point(bounds.Width * 3 / 5, horizon + 10), new Point(bounds.Width * 4 / 5, horizon - 36), new Point(bounds.Width, horizon + 20), new Point(bounds.Width, bounds.Height), new Point(0, bounds.Height) });
+
+        float pulse = .5f + .5f * MathF.Sin(progress * 4.3f);
+        if (phase == 0)
+        {
+            int cx = bounds.Width / 2, cy = bounds.Height * 38 / 100;
+            DrawCinematicRift(g, cx, cy, Math.Min(bounds.Width, bounds.Height) / 5, pulse, Color.FromArgb(184, 91, 255));
+            using var slashGlow = new Pen(Color.FromArgb(58, 201, 143, 255), Math.Max(14, bounds.Width / 58));
+            using var slash = new Pen(Color.FromArgb(230, 210, 191, 255), 3);
+            int offset = (int)(MathF.Sin(progress * 2) * 20);
+            g.DrawLine(slashGlow, cx - 180, cy + 70 + offset, cx + 195, cy - 82 - offset);
+            g.DrawLine(slash, cx - 180, cy + 70 + offset, cx + 195, cy - 82 - offset);
+        }
+        else if (phase == 1)
+        {
+            DrawCinematicRift(g, bounds.Width / 2, bounds.Height * 39 / 100, Math.Min(bounds.Width, bounds.Height) / 5, pulse, Color.FromArgb(153, 104, 255));
+            int hunterHeight = Math.Min(bounds.Height / 2, 300);
+            DrawMenuHunter(g, bounds.Width / 2, horizon + 54, hunterHeight);
+            using var system = new SolidBrush(Color.FromArgb(210, 8, 7, 24));
+            var panel = new Rectangle(bounds.Width - 300, 34, 254, 72);
+            g.FillRectangle(system, panel);
+            using var border = new Pen(Color.FromArgb(185, 159, 111, 255), 1.4f); g.DrawRectangle(border, panel);
+            using var statusFont = new Font("Bahnschrift", 11, FontStyle.Bold);
+            using var statusBrush = new SolidBrush(Color.FromArgb(235, 225, 205, 255));
+            TextRenderer.DrawText(g, "SISTEMA EN LÍNEA\nCAZADOR DESPERTADO", statusFont, Rectangle.Inflate(panel, -12, -8), Color.FromArgb(235, 225, 205, 255), TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+        }
+        else if (phase == 2)
+        {
+            int radius = Math.Max(38, Math.Min(bounds.Width, bounds.Height) / 13);
+            DrawCinematicRift(g, bounds.Width / 6, bounds.Height * 43 / 100, radius, pulse, Color.FromArgb(190, 101, 255));
+            DrawCinematicRift(g, bounds.Width / 2, bounds.Height * 43 / 100, radius, 1 - pulse, Color.FromArgb(255, 95, 83));
+            DrawCinematicRift(g, bounds.Width * 5 / 6, bounds.Height * 43 / 100, radius, pulse, Color.FromArgb(77, 177, 255));
+            string[] names = { "RUINAS", "BOSQUE", "CIUDAD" };
+            using var nameFont = new Font("Bahnschrift", Math.Max(10, bounds.Width / 92), FontStyle.Bold);
+            using var nameBrush = new SolidBrush(Color.FromArgb(225, 229, 216, 255));
+            using var format = new StringFormat { Alignment = StringAlignment.Center };
+            for (int i = 0; i < names.Length; i++) g.DrawString(names[i], nameFont, nameBrush, new RectangleF(i * bounds.Width / 3f, bounds.Height * .61f, bounds.Width / 3f, 26), format);
+        }
+        else
+        {
+            DrawCinematicRift(g, bounds.Width * 72 / 100, bounds.Height * 40 / 100, Math.Min(bounds.Width, bounds.Height) / 6, pulse, Color.FromArgb(158, 92, 255));
+            DrawMenuHunter(g, bounds.Width / 2, horizon + 53, Math.Min(bounds.Height / 2, 310));
+            using var objective = new SolidBrush(Color.FromArgb(215, 8, 7, 25));
+            var card = new Rectangle(bounds.Width - 322, bounds.Height / 4, 274, 88);
+            g.FillRectangle(objective, card);
+            using var edge = new Pen(Color.FromArgb(194, 255, 196, 96), 1.5f); g.DrawRectangle(edge, card);
+            TextRenderer.DrawText(g, "MISIÓN PRINCIPAL\nRecupera el núcleo\nRegresa a extracción", new Font("Bahnschrift", 10, FontStyle.Bold), Rectangle.Inflate(card, -12, -8), Color.FromArgb(240, 255, 228, 190), TextFormatFlags.Left | TextFormatFlags.VerticalCenter);
+        }
+
+        using var foreground = new SolidBrush(Color.FromArgb(220, 6, 5, 17));
+        g.FillPolygon(foreground, new[] { new Point(0, horizon + 68), new Point(bounds.Width / 5, horizon + 34), new Point(bounds.Width * 2 / 5, horizon + 78), new Point(bounds.Width * 3 / 5, horizon + 42), new Point(bounds.Width * 4 / 5, horizon + 73), new Point(bounds.Width, horizon + 38), new Point(bounds.Width, bounds.Height), new Point(0, bounds.Height) });
+        using var fog = new SolidBrush(Color.FromArgb(16, 128, 83, 226));
+        g.FillEllipse(fog, -bounds.Width / 8, horizon + (int)(progress * 12), bounds.Width / 2, 42);
+        g.FillEllipse(fog, bounds.Width * 5 / 8, horizon + 22 - (int)(progress * 10), bounds.Width / 2, 38);
+    }
+
+    private static void DrawCinematicRift(Graphics g, int x, int y, int radius, float pulse, Color color)
+    {
+        int outer = radius + (int)(pulse * 15);
+        using var aura = new SolidBrush(Color.FromArgb(32, color)); g.FillEllipse(aura, x - outer * 2, y - outer * 2, outer * 4, outer * 4);
+        using var interior = new LinearGradientBrush(new Rectangle(x - radius / 2, y - radius, radius, radius * 2), Color.FromArgb(235, color), Color.FromArgb(205, 4, 4, 17), LinearGradientMode.Horizontal);
+        g.FillEllipse(interior, x - radius / 2, y - radius, radius, radius * 2);
+        using var rim = new Pen(Color.FromArgb(220, color), Math.Max(2, radius / 22)); g.DrawEllipse(rim, x - radius / 2, y - radius, radius, radius * 2);
+        using var ring = new Pen(Color.FromArgb(94, color), 1.5f); g.DrawEllipse(ring, x - radius / 2 - 10, y - radius - 12, radius + 20, radius * 2 + 24);
+    }
+
+    private sealed class BufferedPanel : Panel
+    {
+        public BufferedPanel() => SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+    }
+
     private async Task TestSql(IWin32Window? owner = null)
     {
         try
         {
             using var con=await OpenGameDatabase();await EnsureSchema(con);
+            _sqlAvailable=true;
             _status.Text="●  SQL SERVER: conexión activa";_status.ForeColor=Turquesa;
             ShowSystemMessage("Conexión activa. El archivo de partidas del Sistema está disponible.","SQL Server",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
         }
         catch(Exception ex)
         {
-            _status.Text="●  SQL SERVER: sin conexión";_status.ForeColor=Color.Salmon;
+            _sqlAvailable=false;
+            _status.Text="●  PARTIDA LOCAL ACTIVA  ·  SQL SIN CONEXIÓN";_status.ForeColor=Color.Salmon;
             ShowSystemMessage("No fue posible conectar. Revisa el servidor, la base de datos y las credenciales.\n\n"+ex.Message,"Conexión no disponible",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);
         }
     }
     private async Task SaveGame(bool notify, IWin32Window? owner = null)
     {
-        if(_session is null)return;
+        if(_session is null || _saveInProgress)return;
+        _saveInProgress=true;
         try
         {
-            using var con=await OpenGameDatabase();await EnsureSchema(con);
-            using var cmd=con.CreateCommand();
-            cmd.CommandText="IF EXISTS (SELECT 1 FROM dbo.PartidaNexus WHERE NombreCadete=@nombre) UPDATE dbo.PartidaNexus SET Fila=@fila,Columna=@columna,Energia=@energia,Estabilidad=@estabilidad,XP=@xp,EstadoJson=@estado,FechaActualizacion=SYSUTCDATETIME() WHERE NombreCadete=@nombre ELSE INSERT dbo.PartidaNexus(NombreCadete,Fila,Columna,Energia,Estabilidad,XP,EstadoJson) VALUES(@nombre,@fila,@columna,@energia,@estabilidad,@xp,@estado);";
-            cmd.Parameters.AddWithValue("@nombre",_session.Cadete.Nombre);cmd.Parameters.AddWithValue("@fila",_session.Mapa.Fila);cmd.Parameters.AddWithValue("@columna",_session.Mapa.Columna);
-            cmd.Parameters.AddWithValue("@energia",_session.Cadete.Energia);cmd.Parameters.AddWithValue("@estabilidad",_session.Cadete.Estabilidad);cmd.Parameters.AddWithValue("@xp",_session.Cadete.XP);
-            cmd.Parameters.Add("@estado",System.Data.SqlDbType.NVarChar,-1).Value=_session.Exportar();await cmd.ExecuteNonQueryAsync();
-            if(notify)ShowSystemMessage("Progreso sincronizado en SQL Server.","Partida guardada",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
+            string directory=Path.GetDirectoryName(LocalSavePath)!;
+            Directory.CreateDirectory(directory);
+            string temporaryPath=LocalSavePath+".tmp";
+            await File.WriteAllTextAsync(temporaryPath,_session.Exportar(),new System.Text.UTF8Encoding(false));
+            File.Move(temporaryPath,LocalSavePath,true);
+            if(_sqlAvailable)
+            {
+                try { await SaveSqlBackup(); }
+                catch
+                {
+                    _sqlAvailable=false;
+                    if(_status is not null){_status.Text="●  PARTIDA LOCAL ACTIVA  ·  SQL SIN CONEXIÓN";_status.ForeColor=Color.Salmon;}
+                }
+            }
+            if(notify)ShowSystemMessage($"Partida guardada en este equipo.\n\n{LocalSavePath}{(_sqlAvailable?"\n\nCopia sincronizada en SQL Server.":"")}","Partida guardada",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
         }
-        catch(Exception ex){ShowSystemMessage("No se guardó la partida. Comprueba la conexión SQL Server.\n\n"+ex.Message,"Error de guardado",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);}
+        catch(Exception ex){ShowSystemMessage("No se pudo guardar la partida local. Comprueba el espacio disponible y los permisos de tu perfil de Windows.\n\n"+ex.Message,"Error de guardado",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);}
+        finally{_saveInProgress=false;}
+    }
+
+    private void QueueAutosave()
+    {
+        if(_session is null || IsDisposed)return;
+        _autosaveTimer.Stop();
+        _autosaveTimer.Start();
+    }
+
+    private async Task SaveSqlBackup()
+    {
+        if(_session is null)return;
+        using var con=await OpenGameDatabase();await EnsureSchema(con);
+        using var cmd=con.CreateCommand();
+        cmd.CommandText="IF EXISTS (SELECT 1 FROM dbo.PartidaNexus WHERE NombreCadete=@nombre) UPDATE dbo.PartidaNexus SET Fila=@fila,Columna=@columna,Energia=@energia,Estabilidad=@estabilidad,XP=@xp,EstadoJson=@estado,FechaActualizacion=SYSUTCDATETIME() WHERE NombreCadete=@nombre ELSE INSERT dbo.PartidaNexus(NombreCadete,Fila,Columna,Energia,Estabilidad,XP,EstadoJson) VALUES(@nombre,@fila,@columna,@energia,@estabilidad,@xp,@estado);";
+        cmd.Parameters.AddWithValue("@nombre",_session.Cadete.Nombre);cmd.Parameters.AddWithValue("@fila",_session.Mapa.Fila);cmd.Parameters.AddWithValue("@columna",_session.Mapa.Columna);
+        cmd.Parameters.AddWithValue("@energia",_session.Cadete.Energia);cmd.Parameters.AddWithValue("@estabilidad",_session.Cadete.Estabilidad);cmd.Parameters.AddWithValue("@xp",_session.Cadete.XP);
+        cmd.Parameters.Add("@estado",System.Data.SqlDbType.NVarChar,-1).Value=_session.Exportar();await cmd.ExecuteNonQueryAsync();
     }
     private async Task LoadGame()
     {
+        if(File.Exists(LocalSavePath))
+        {
+            try
+            {
+                string localJson=await File.ReadAllTextAsync(LocalSavePath);
+                _session=GameSession.Restaurar(localJson);_nombre=_session.Cadete.Nombre;_failureReported=false;ShowGame();return;
+            }
+            catch(Exception ex){ShowSystemMessage("El archivo de partida local está dañado y no se pudo recuperar.\n\n"+ex.Message,"Error de partida",MessageBoxButtons.OK,MessageBoxIcon.Warning);return;}
+        }
         try
         {
             using var con=await OpenGameDatabase();await EnsureSchema(con);
@@ -347,7 +486,7 @@ public sealed partial class MainForm : Form
             if(string.IsNullOrWhiteSpace(json)){ShowSystemMessage("No hay una partida sincronizada disponible para recuperar.","Sin partidas",MessageBoxButtons.OK,MessageBoxIcon.Information);return;}
             _session=GameSession.Restaurar(json);_nombre=_session.Cadete.Nombre;_failureReported=false;ShowGame();
         }
-        catch(Exception ex){ShowSystemMessage("No se pudo recuperar la partida. Configura y prueba SQL Server.\n\n"+ex.Message,"Error de recuperación",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+        catch(Exception ex){ShowSystemMessage("No hay una partida local guardada todavía y no se pudo consultar SQL Server. Inicia una incursión nueva; después podrás guardar en este equipo sin instalar SQL Server.\n\n"+ex.Message,"Sin partida guardada",MessageBoxButtons.OK,MessageBoxIcon.Information);}
     }
 
     private static async Task EnsureSchema(SqlConnection con)
