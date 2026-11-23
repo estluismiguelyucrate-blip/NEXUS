@@ -142,6 +142,7 @@ public sealed class DungeonMapScene : Control
         const float roomWidth = 280, roomHeight = 220;
         float nx = Math.Clamp(_player.X + dx, 12, _session.Mapa.Columnas * roomWidth - 12);
         float ny = Math.Clamp(_player.Y + dy, 12, _session.Mapa.Filas * roomHeight - 12);
+        if (IsBlocked(nx, ny)) return;
         int column = Math.Clamp((int)(nx / roomWidth), 0, _session.Mapa.Columnas - 1);
         int row = Math.Clamp((int)(ny / roomHeight), 0, _session.Mapa.Filas - 1);
         if (row != _lastZoneRow || column != _lastZoneColumn)
@@ -188,8 +189,10 @@ public sealed class DungeonMapScene : Control
         if (distance > 45)
         {
             float step = Math.Min(distance - 44, 105 * delta);
-            _enemyPosition.X += dx / distance * step;
-            _enemyPosition.Y += dy / distance * step;
+            float nextX = _enemyPosition.X + dx / distance * step;
+            float nextY = _enemyPosition.Y + dy / distance * step;
+            if (!IsBlocked(nextX, _enemyPosition.Y)) _enemyPosition.X = nextX;
+            if (!IsBlocked(_enemyPosition.X, nextY)) _enemyPosition.Y = nextY;
             return;
         }
         _enemyAttackCooldown -= delta;
@@ -246,6 +249,34 @@ public sealed class DungeonMapScene : Control
         using Graphics terrain = Graphics.FromImage(_terrainCache);
         terrain.SmoothingMode = SmoothingMode.AntiAlias;
         DrawTerrain(terrain);
+    }
+
+    private bool IsBlocked(float x, float y)
+    {
+        if (_session is null) return false;
+        for (int row = 0; row < _session.Mapa.Filas; row++)
+            for (int col = 0; col < _session.Mapa.Columnas; col++)
+            {
+                PointF center = Center(row, col);
+                if (_session.MapaId == 0)
+                {
+                    float ruinX = center.X - 94, ruinY = center.Y - 28;
+                    if (Math.Abs(x - ruinX) < 35 && Math.Abs(y - ruinY) < 34) return true;
+                }
+                else if (_session.MapaId == 1)
+                {
+                    float treeX = center.X + ((row + col) % 2 == 0 ? -92 : 94), treeY = center.Y - 38;
+                    float dx = x - treeX, dy = y - treeY;
+                    if (dx * dx + dy * dy < 31 * 31) return true;
+                }
+                else
+                {
+                    float templeX = center.X + 94, templeY = center.Y - 25;
+                    if (Math.Abs(x - (templeX - 18)) < 14 && y > templeY - 22 && y < templeY + 43) return true;
+                    if (Math.Abs(x - (templeX + 18)) < 14 && y > templeY - 22 && y < templeY + 43) return true;
+                }
+            }
+        return false;
     }
 
     private static void DrawRuin(Graphics g, float x, float y)
