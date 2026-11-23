@@ -20,7 +20,7 @@ public sealed partial class MainForm : Form
     private Label _equipment = null!;
     private Panel _meter = null!;
     private Panel _encounterPanel = null!;
-    private readonly Button[,] _tiles = new Button[4,5];
+    private DungeonMapScene? _mapScene;
 
     public MainForm()
     {
@@ -58,9 +58,9 @@ public sealed partial class MainForm : Form
         root.Controls.Add(menu,0,0);
         if (_nexusLogo is not null)
             menu.Controls.Add(new PictureBox { Image=_nexusLogo, SizeMode=PictureBoxSizeMode.Zoom, BackColor=Color.Transparent, Left=4, Top=8, Width=menu.ClientSize.Width-8, Height=205, Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right });
-        menu.Controls.Add(MakeLabel("DESPIERTA   ·   EVOLUCIONA   ·   SOBREVIVE", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
-        menu.Controls.Add(MakeLabel("EL SISTEMA\nTE HA ELEGIDO", 22, Color.White, true, 8, 235, 300, 66));
-        menu.Controls.Add(MakeLabel("Tres portales han aparecido.\nEntra al calabozo y reclama tu poder.", 9.5f, TextoSuave, false, 10, 307, 295, 43));
+        menu.Controls.Add(MakeLabel("DESPIERTA   ·   EVOLUCIONA", 8.5f, Color.FromArgb(211,194,255), true, 8, 205, 295, 20));
+        menu.Controls.Add(MakeLabel("EL SISTEMA\nTE HA ELEGIDO", 20, Color.White, true, 8, 235, 300, 74));
+        menu.Controls.Add(MakeLabel("Tres portales han aparecido.\nEntra al calabozo y reclama tu poder.", 9.5f, TextoSuave, false, 10, 315, 295, 42));
 
         var play = MenuButton("▶   INICIAR JUEGO", 365, true); play.Click += (_,_) => NewCadet(); menu.Controls.Add(play);
         var cont = MenuButton("↻   CONTINUAR PARTIDA", 420, false); cont.Click += async (_,_) => await LoadGame(); menu.Controls.Add(cont);
@@ -99,9 +99,9 @@ public sealed partial class MainForm : Form
         var mission = MenuCard(scene, 22, 0, 340, 126);
         mission.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
         mission.Top=scene.ClientSize.Height-153;
-        mission.Controls.Add(MakeLabel("PORTAL DE RANGO DESCONOCIDO", 13, Color.White, true, 16, 13, 300, 24));
+        mission.Controls.Add(MakeLabel("PORTAL DE RANGO ?", 13, Color.White, true, 16, 13, 300, 24));
         mission.Controls.Add(MakeLabel("CALABOZO ACTIVO   ·   SECTOR 01", 8.5f, Color.FromArgb(210,199,232), false, 16, 42, 300, 19));
-        mission.Controls.Add(MakeLabel("Elimina a la criatura jefe. Recupera el núcleo.\nNo permitas que el portal te consuma.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
+        mission.Controls.Add(MakeLabel("Derrota al jefe. Recupera el núcleo.\nRegresa con vida.", 8.5f, TextoSuave, false, 16, 70, 302, 38));
         scene.Resize += (_,_) => { caption.Top=scene.ClientSize.Height-177; mission.Top=scene.ClientSize.Height-153; quest.Left=Math.Max(24,scene.ClientSize.Width-296); };
 
         var hint = MakeLabel("WASD / FLECHAS  ·  MOVERSE     ESC  ·  PAUSA", 7.5f, Color.FromArgb(190,179,220), false, 25, scene.ClientSize.Height-20, 420, 16);
