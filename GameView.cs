@@ -15,13 +15,13 @@ public sealed partial class MainForm
         var header = new Panel { Dock=DockStyle.Fill }; root.Controls.Add(header,0,0); root.SetColumnSpan(header,2);
         header.Controls.Add(MakeLabel("NEXUS",15,Turquesa,true,4,8,84,28));
         header.Controls.Add(MakeLabel("CAZADOR DEL UMBRAL",17,Color.White,true,96,2,370,30));
-        header.Controls.Add(MakeLabel("MISIÓN PRINCIPAL    /    MAZMORRA H3    /    SECTOR PERDIDO",9,TextoSuave,false,98,34,470,22));
+        header.Controls.Add(MakeLabel($"MISIÓN PRINCIPAL    /    {_session.NombreMapa.ToUpperInvariant()}",9,TextoSuave,false,98,34,520,22));
         var back=MakeButton("Ⅱ  PAUSA",Color.FromArgb(28,22,52),Color.White,0,12,150,40);
         back.Anchor=AnchorStyles.Top|AnchorStyles.Right;back.Left=ClientSize.Width-204;back.Click+=(_,_)=>ShowPause();header.Controls.Add(back);
 
         var mapPanel=Card();root.Controls.Add(mapPanel,0,1);
-        mapPanel.Controls.Add(MakeLabel("MAPA DE LA MAZMORRA",11,Turquesa,true,22,17,360,26));
-        mapPanel.Controls.Add(MakeLabel("H3   /   4 × 5 ZONAS   ·   NIEBLA DE GUERRA ACTIVA",9,TextoSuave,false,22,43,450,22));
+        mapPanel.Controls.Add(MakeLabel(_session.NombreMapa.ToUpperInvariant(),11,Turquesa,true,22,17,440,26));
+        mapPanel.Controls.Add(MakeLabel($"{_session.AmbienteMapa}   ·   4 × 5 ZONAS   ·   NIEBLA DE GUERRA",9,TextoSuave,false,22,43,510,22));
         mapPanel.Controls.Add(MakeLabel("⌂ BASE     ◆ SUMINISTRO     ⚡ ANOMALÍA     ◉ CADETE",9,TextoSuave,false,22,72,510,23));
         var grid=new Panel{Left=22,Top=112,Width=570,Height=400,BackColor=Color.FromArgb(9,8,22)};mapPanel.Controls.Add(grid);
         for(int r=0;r<4;r++)for(int c=0;c<5;c++)
@@ -31,7 +31,7 @@ public sealed partial class MainForm
         }
         mapPanel.Controls.Add(MakeLabel("MOVERSE",9,TextoSuave,true,28,532,130,24));
         mapPanel.Controls.Add(MakeLabel("W A S D   /   FLECHAS   /   SECTOR ADYACENTE",9,Color.FromArgb(218,211,242),false,162,532,400,24));
-        _log=MakeLabel("La señal te espera. Explora la mazmorra y encuentra el núcleo.",10,Color.FromArgb(235,226,255),false,28,570,610,48);mapPanel.Controls.Add(_log);
+        _log=MakeLabel("La señal te espera. Explora el territorio y encuentra el núcleo.",10,Color.FromArgb(235,226,255),false,28,570,610,48);mapPanel.Controls.Add(_log);
 
         var side=Card();root.Controls.Add(side,1,1);
         side.Controls.Add(MakeLabel("PERSONAJE   /   CAZADOR",9,Turquesa,true,20,17,260,22));
@@ -147,7 +147,7 @@ public sealed partial class MainForm
         frame.Paint+=(_,e)=>{using var pen=new Pen(Color.FromArgb(210,153,92,255),1.4f);e.Graphics.DrawRectangle(pen,0,0,frame.Width-1,frame.Height-1);};
         dlg.Controls.Add(frame);
         frame.Controls.Add(MakeLabel("PAUSA",25,Color.White,true,45,30,300,42));
-        frame.Controls.Add(MakeLabel("La expedición está detenida.\nEl sector H3 permanece activo.",10,TextoSuave,false,48,80,300,50));
+        frame.Controls.Add(MakeLabel($"La expedición está detenida.\nTerritorio: {_session?.NombreMapa}.",10,TextoSuave,false,48,80,300,50));
         var resume=MakeButton("▶   CONTINUAR",Turquesa,Color.White,48,150,315,48);resume.Click+=(_,_)=>{dlg.DialogResult=DialogResult.OK;dlg.Close();};frame.Controls.Add(resume);
         var save=MakeButton("GUARDAR PARTIDA",Color.FromArgb(34,24,62),Color.White,48,211,315,42);save.Click+=async(_,_)=>await SaveGame(true);frame.Controls.Add(save);
         var menu=MakeButton("VOLVER AL MENÚ",Color.FromArgb(25,19,48),Color.White,48,265,315,42);menu.Click+=async(_,_)=>{await SaveGame(false);dlg.Close();ShowMenu();};frame.Controls.Add(menu);
