@@ -2,32 +2,43 @@ using System.Text.Json;
 
 namespace Nexus;
 
-/// <summary>Adapta las reglas H3 ya existentes a acciones que puede invocar Windows Forms.</summary>
+/// <summary>Conecta los mapas y reglas de NEXUS con la interfaz jugable de Windows Forms.</summary>
 public sealed class GameSession
 {
     private const int NucleoFila = 2, NucleoColumna = 4;
-    private static readonly int[,] DatosMapa =
+    private static readonly (string Nombre, string Ambiente, int[,] Celdas)[] Mapas =
     {
-        { 0, 0, 1, 0, 0 },
-        { 0, 2, 0, 3, 0 },
-        { 0, 0, 0, 0, 1 },
-        { 3, 0, 1, 0, 0 }
+        ("Ruinas del Umbral", "Torres antiguas · niebla púrpura", new int[,] {
+            { 0, 0, 1, 0, 0 }, { 0, 2, 0, 3, 0 }, { 0, 0, 0, 0, 1 }, { 3, 0, 1, 0, 0 }
+        }),
+        ("Bosque Carmesí", "Raíces vivas · bruma roja", new int[,] {
+            { 0, 3, 0, 1, 0 }, { 0, 0, 0, 0, 0 }, { 2, 1, 0, 0, 1 }, { 0, 0, 3, 0, 0 }
+        }),
+        ("Ciudad Sumergida", "Templos inundados · aguas oscuras", new int[,] {
+            { 1, 0, 0, 3, 0 }, { 0, 0, 1, 0, 0 }, { 3, 0, 0, 0, 1 }, { 0, 2, 0, 1, 0 }
+        })
     };
+    public static IReadOnlyList<string> NombresMapas { get; } = Mapas.Select(m => m.Nombre).ToArray();
 
     private bool _guardianActivo;
     public Cadete Cadete { get; private set; } = null!;
     public Mapa Mapa { get; private set; } = null!;
+    public int MapaId { get; private set; }
+    public string NombreMapa => Mapas[MapaId].Nombre;
+    public string AmbienteMapa => Mapas[MapaId].Ambiente;
     public Mision Mision { get; private set; } = null!;
     public Personaje? EnemigoActual { get; private set; }
     public bool MisionCompletada { get; private set; }
     public bool Derrotado => Cadete is not null && (Cadete.Derrotado || Cadete.Estabilidad <= 0);
     public bool EnLaBase => Mapa is not null && Mapa.Actual == TipoCelda.Base;
 
-    public void Iniciar(string nombre, int edad)
+    public void Iniciar(string nombre, int edad, int mapaId = 0)
     {
         if (edad is < 18 or > 60) throw new ArgumentOutOfRangeException(nameof(edad), "La edad permitida es de 18 a 60 años.");
+        if (mapaId < 0 || mapaId >= Mapas.Length) throw new ArgumentOutOfRangeException(nameof(mapaId), "Selecciona uno de los mapas disponibles.");
+        MapaId = mapaId;
         Cadete = new Cadete(nombre, edad, 100, 100);
-        Mapa = new Mapa(DatosMapa);
+        Mapa = new Mapa(Mapas[mapaId].Celdas);
         Mision = new Mision();
         EnemigoActual = null;
         _guardianActivo = false;
@@ -49,7 +60,7 @@ public sealed class GameSession
         for (int f = 0; f < Mapa.Filas; f++) for (int c = 0; c < Mapa.Columnas; c++) visitadas[f, c] = Mapa.FueVisitada(f, c);
         return JsonSerializer.Serialize(new PartidaGuardada
         {
-            Nombre = Cadete.Nombre, Edad = Cadete.Edad, Energia = Cadete.Energia, Estabilidad = Cadete.Estabilidad,
+            Nombre = Cadete.Nombre, Edad = Cadete.Edad, MapaId = MapaId, Energia = Cadete.Energia, Estabilidad = Cadete.Estabilidad,
             Ataque = Cadete.Ataque, XP = Cadete.XP, Escudo = Cadete.Escudo, Descansos = Cadete.DescansosRestantes,
             AnalisisActivo = Cadete.AnalisisActivo, Fila = Mapa.Fila, Columna = Mapa.Columna,
             Visitadas = Enumerable.Range(0, Mapa.Filas).SelectMany(f => Enumerable.Range(0, Mapa.Columnas).Where(c => visitadas[f, c]).Select(c => $"{f},{c}")).ToList(),
@@ -65,7 +76,8 @@ public sealed class GameSession
     {
         var guardado = JsonSerializer.Deserialize<PartidaGuardada>(json) ?? throw new InvalidOperationException("El guardado está vacío.");
         var session = new GameSession();
-        session.Iniciar(guardado.Nombre, guardado.Edad);
+        int mapaId = guardado.MapaId >= 0 && guardado.MapaId < Mapas.Length ? guardado.MapaId : 0;
+        session.Iniciar(guardado.Nombre, guardado.Edad, mapaId);
         session.Cadete.CambiarEnergia(guardado.Energia - session.Cadete.Energia);
         session.Cadete.CambiarEstabilidad(guardado.Estabilidad - session.Cadete.Estabilidad);
         session.Cadete.MejorarAtaque(guardado.Ataque - session.Cadete.Ataque);
@@ -275,6 +287,7 @@ public sealed class PartidaGuardada
 {
     public string Nombre { get; set; } = "Cadete";
     public int Edad { get; set; }
+    public int MapaId { get; set; }
     public int Energia { get; set; }
     public int Estabilidad { get; set; }
     public int Ataque { get; set; }
