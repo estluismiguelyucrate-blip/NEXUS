@@ -16,22 +16,18 @@ public sealed partial class MainForm
         header.Controls.Add(MakeLabel("NEXUS",15,Turquesa,true,4,8,84,28));
         header.Controls.Add(MakeLabel("SISTEMA DEL MONARCA",17,Color.White,true,96,2,370,30));
         header.Controls.Add(MakeLabel($"MISIÓN ACTIVA    /    {_session.NombreMapa.ToUpperInvariant()}",9,TextoSuave,false,98,34,520,22));
-        var back=MakeButton("Ⅱ  SISTEMA EN PAUSA",Color.FromArgb(17,23,48),Color.White,0,12,150,40);
+        var back=MakeButton("Ⅱ  PAUSA",Color.FromArgb(17,23,48),Color.White,0,12,142,40);
         back.Anchor=AnchorStyles.Top|AnchorStyles.Right;back.Left=ClientSize.Width-204;back.Click+=(_,_)=>ShowPause();header.Controls.Add(back);
 
         var mapPanel=Card();root.Controls.Add(mapPanel,0,1);
         mapPanel.Controls.Add(MakeLabel(_session.NombreMapa.ToUpperInvariant(),11,Turquesa,true,22,17,440,26));
-        mapPanel.Controls.Add(MakeLabel($"{_session.AmbienteMapa}   ·   4 × 5 ZONAS   ·   NIEBLA DEL CALABOZO",9,TextoSuave,false,22,43,510,22));
-        mapPanel.Controls.Add(MakeLabel("⌂ SALIDA     ◆ BOTÍN     ⚡ PORTAL     ◉ CAZADOR",9,TextoSuave,false,22,72,510,23));
-        var grid=new Panel{Left=22,Top=112,Width=570,Height=400,BackColor=Color.FromArgb(5,8,20)};mapPanel.Controls.Add(grid);
-        for(int r=0;r<4;r++)for(int c=0;c<5;c++)
-        {
-            int rr=r,cc=c;var tile=new Button{Left=12+c*108+(r%2)*17,Top=12+r*93,Width=94,Height=78,FlatStyle=FlatStyle.Flat,Font=new Font("Segoe UI Symbol",19,FontStyle.Bold),Tag=(r,c),Cursor=Cursors.Hand};
-            tile.FlatAppearance.BorderSize=1;tile.FlatAppearance.MouseOverBackColor=Color.FromArgb(54,43,103);tile.Click+=(_,_)=>MoveTo(rr,cc);_tiles[r,c]=tile;grid.Controls.Add(tile);
-        }
-        mapPanel.Controls.Add(MakeLabel("DESPLAZAMIENTO",9,TextoSuave,true,28,532,130,24));
-        mapPanel.Controls.Add(MakeLabel("W A S D   /   FLECHAS   /   ZONA ADYACENTE",9,Color.FromArgb(218,211,242),false,162,532,400,24));
-        _log=MakeLabel("El Sistema te observa. Explora el calabozo y reclama el núcleo.",10,Color.FromArgb(235,226,255),false,28,570,610,48);mapPanel.Controls.Add(_log);
+        mapPanel.Controls.Add(MakeLabel($"{_session.AmbienteMapa}   ·   4 × 5 ZONAS",9,TextoSuave,false,22,43,510,22));
+        mapPanel.Controls.Add(MakeLabel("⌂ EXTRACCIÓN     ◈ BOTÍN     ◉ PORTAL     ▲ CAZADOR",9,TextoSuave,false,22,72,510,23));
+        _mapScene=new DungeonMapScene{Left=22,Top=105,Width=570,Height=410,Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right};
+        _mapScene.Bind(_session,MoveTo);mapPanel.Controls.Add(_mapScene);
+        mapPanel.Controls.Add(MakeLabel("EXPLORACIÓN",9,TextoSuave,true,28,523,120,24));
+        mapPanel.Controls.Add(MakeLabel("CLIC EN UNA PLATAFORMA   ·   WASD / FLECHAS",9,Color.FromArgb(218,211,242),false,154,523,430,24));
+        _log=MakeLabel("El Sistema te observa. Explora el calabozo y reclama el núcleo.",10,Color.FromArgb(235,226,255),false,28,556,610,42);mapPanel.Controls.Add(_log);
 
         var side=Card();root.Controls.Add(side,1,1);
         side.Controls.Add(MakeLabel("ESTADO DEL CAZADOR",9,Turquesa,true,20,17,260,22));
@@ -62,16 +58,7 @@ public sealed partial class MainForm
     private void RefreshBoard()
     {
         if(_session is null)return;var game=_session;
-        for(int r=0;r<4;r++)for(int c=0;c<5;c++)
-        {
-            bool here=r==game.Mapa.Fila&&c==game.Mapa.Columna,seen=game.Mapa.FueVisitada(r,c);
-            TipoCelda type=game.Mapa.TipoEn(r,c);var tile=_tiles[r,c];
-            tile.Text=here?"◉":!seen?"·":type switch{TipoCelda.Recurso=>"◆",TipoCelda.Base=>"⌂",TipoCelda.Anomalia=>"⚡",_=>"·"};
-            tile.BackColor=here?Color.FromArgb(69,55,142):!seen?Color.FromArgb(13,19,39):type switch{TipoCelda.Recurso=>Color.FromArgb(31,33,72),TipoCelda.Base=>Color.FromArgb(20,43,74),TipoCelda.Anomalia=>Color.FromArgb(76,27,91),_=>Color.FromArgb(19,24,48)};
-            tile.ForeColor=here?Color.FromArgb(255,255,255):type==TipoCelda.Anomalia?Color.FromArgb(255,139,239):Color.FromArgb(184,199,255);
-            tile.FlatAppearance.BorderColor=here?Turquesa:Color.FromArgb(65,68,125);
-            tile.Enabled=game.EnemigoActual is null&&!game.Derrotado&&!game.MisionCompletada;
-        }
+        _mapScene?.RefreshScene();
         Cadete cadete=game.Cadete;
         _stats.Text=$"ENERGÍA  {cadete.Energia,3}/{Cadete.MAX}        ESTABILIDAD  {cadete.Estabilidad,3}/{Cadete.MAX}\nATAQUE {cadete.Ataque}   ESCUDO {cadete.Escudo}   XP {cadete.XP}   ZONA {game.Mapa.Fila+1}:{game.Mapa.Columna+1}";
         _meter?.Invalidate();
