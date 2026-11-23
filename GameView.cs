@@ -21,12 +21,12 @@ public sealed partial class MainForm
 
         var mapPanel=Card();root.Controls.Add(mapPanel,0,1);
         mapPanel.Controls.Add(MakeLabel(_session.NombreMapa.ToUpperInvariant(),11,Turquesa,true,22,17,440,26));
-        mapPanel.Controls.Add(MakeLabel($"{_session.AmbienteMapa}   ·   4 × 5 ZONAS",9,TextoSuave,false,22,43,510,22));
+        mapPanel.Controls.Add(MakeLabel($"{_session.AmbienteMapa}   ·   EXPLORACIÓN EN TIEMPO REAL",9,TextoSuave,false,22,43,510,22));
         mapPanel.Controls.Add(MakeLabel("⌂ EXTRACCIÓN     ◈ BOTÍN     ◉ PORTAL     ▲ CAZADOR",9,TextoSuave,false,22,72,510,23));
         _mapScene=new DungeonMapScene{Left=22,Top=105,Width=570,Height=410,Anchor=AnchorStyles.Top|AnchorStyles.Left|AnchorStyles.Right};
-        _mapScene.Bind(_session,MoveTo);mapPanel.Controls.Add(_mapScene);
+        _mapScene.Bind(_session,MoveTo,Act);mapPanel.Controls.Add(_mapScene);
         mapPanel.Controls.Add(MakeLabel("EXPLORACIÓN",9,TextoSuave,true,28,523,120,24));
-        mapPanel.Controls.Add(MakeLabel("CLIC EN UNA PLATAFORMA   ·   WASD / FLECHAS",9,Color.FromArgb(218,211,242),false,154,523,430,24));
+        mapPanel.Controls.Add(MakeLabel("WASD MOVER   ·   SHIFT DASH   ·   J / ESPACIO ATACAR   ·   Q HUIR",8.5f,Color.FromArgb(218,211,242),false,145,523,450,24));
         _log=MakeLabel("El Sistema te observa. Explora el calabozo y reclama el núcleo.",10,Color.FromArgb(235,226,255),false,28,556,610,42);mapPanel.Controls.Add(_log);
 
         var side=Card();root.Controls.Add(side,1,1);
@@ -121,11 +121,11 @@ public sealed partial class MainForm
     {
         if(_session is null)return;
         if(e.KeyCode==Keys.Escape){ShowPause();e.Handled=true;return;}
-        if(e.KeyCode is not (Keys.W or Keys.A or Keys.S or Keys.D or Keys.Up or Keys.Down or Keys.Left or Keys.Right))return;
-        int df=e.KeyCode is Keys.W or Keys.Up?-1:e.KeyCode is Keys.S or Keys.Down?1:0;
-        int dc=e.KeyCode is Keys.A or Keys.Left?-1:e.KeyCode is Keys.D or Keys.Right?1:0;
-        MoveTo(_session.Mapa.Fila+df,_session.Mapa.Columna+dc);e.Handled=true;
+        if(e.KeyCode is not (Keys.W or Keys.A or Keys.S or Keys.D or Keys.Up or Keys.Down or Keys.Left or Keys.Right or Keys.Space or Keys.J or Keys.Q or Keys.ShiftKey))return;
+        _mapScene?.SetKey(e.KeyCode,true);e.Handled=true;e.SuppressKeyPress=true;
     }
+
+    private void HandleMovementKeyUp(object? sender,KeyEventArgs e) => _mapScene?.SetKey(e.KeyCode,false);
 
     private void ShowPause()
     {
