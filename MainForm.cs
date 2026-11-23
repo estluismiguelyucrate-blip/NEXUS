@@ -15,7 +15,7 @@ public sealed partial class MainForm : Form
     private string LocalSavePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NEXUS", "savegame.json");
     private GameSession? _session;
     private string _nombre = "Cadete";
-    private readonly System.Windows.Forms.Timer _autosaveTimer = new() { Interval = 1800 };
+    private readonly System.Windows.Forms.Timer _autosaveTimer = new() { Interval = 750 };
     private bool _saveInProgress;
     private Label _status = null!;
     private Label _stats = null!;
@@ -40,7 +40,7 @@ public sealed partial class MainForm : Form
         string iconPath = Path.Combine(AppContext.BaseDirectory, "assets", "nexus.ico");
         if (File.Exists(iconPath)) Icon = new Icon(iconPath);
         FormClosed += (_, _) => { _nexusLogo?.Dispose(); _autosaveTimer.Dispose(); };
-        _autosaveTimer.Tick += async (_, _) => { _autosaveTimer.Stop(); await SaveGame(false); };
+        _autosaveTimer.Tick += async (_, _) => { _autosaveTimer.Stop(); await SaveGame(false, syncCloud:false); };
         KeyPreview = true;
         KeyDown += HandleMovementKey;
         KeyUp += HandleMovementKeyUp;
@@ -424,7 +424,7 @@ public sealed partial class MainForm : Form
             ShowSystemMessage("No fue posible conectar. Revisa el servidor, la base de datos y las credenciales.\n\n"+ex.Message,"Conexión no disponible",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);
         }
     }
-    private async Task SaveGame(bool notify, IWin32Window? owner = null)
+    private async Task SaveGame(bool notify, IWin32Window? owner = null, bool syncCloud = true)
     {
         if(_session is null || _saveInProgress)return;
         _saveInProgress=true;
@@ -435,7 +435,7 @@ public sealed partial class MainForm : Form
             string temporaryPath=LocalSavePath+".tmp";
             await File.WriteAllTextAsync(temporaryPath,_session.Exportar(),new System.Text.UTF8Encoding(false));
             File.Move(temporaryPath,LocalSavePath,true);
-            if(_sqlAvailable)
+            if(_sqlAvailable && syncCloud)
             {
                 try { await SaveSqlBackup(); }
                 catch
@@ -446,7 +446,11 @@ public sealed partial class MainForm : Form
             }
             if(notify)ShowSystemMessage($"Partida guardada en este equipo.\n\n{LocalSavePath}{(_sqlAvailable?"\n\nCopia sincronizada en SQL Server.":"")}","Partida guardada",MessageBoxButtons.OK,MessageBoxIcon.Information,owner);
         }
-        catch(Exception ex){ShowSystemMessage("No se pudo guardar la partida local. Comprueba el espacio disponible y los permisos de tu perfil de Windows.\n\n"+ex.Message,"Error de guardado",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);}
+        catch(Exception ex)
+        {
+            if(notify)ShowSystemMessage("No se pudo guardar la partida local. Comprueba el espacio disponible y los permisos de tu perfil de Windows.\n\n"+ex.Message,"Error de guardado",MessageBoxButtons.OK,MessageBoxIcon.Warning,owner);
+            else if(_status is not null){_status.Text="●  NO SE PUDO AUTOGUARDAR";_status.ForeColor=Color.Salmon;}
+        }
         finally{_saveInProgress=false;}
     }
 
